@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+	<style>
+		body 	{ background-color: powderblue; font-family: 'Lato', sans-serif; text-align: center; }
+		button 	{ background-color: #00BCD4; color:white; width: 100px; cursor: pointer;
+				  text-decoration: none; border-radius: 5px; border: none; outline: none;
+				  margin-left: auto; margin-right: auto; padding: 5px; }
+		.chart#chart2 { display: none; }
+		.chart#chart3 { display: none; }
+		.chartVis 	  { margin-right: auto; margin-left: auto; margin-bottom: 20px; }
+	</style>
+</head>
+<body>
+	<!-- === HTML Content === -->
+	<h1 class="title">Finance Tracking</h1>
+	<div class="chart" id="chart1">
+		<canvas class="chartVis" id="chart1Vis" width="400" height="400"></canvas></div>
+	<div class="chart" id="chart2">
+		<canvas class="chartVis" id="chart2Vis" width="400" height="400"></canvas></div>
+	<div class="chart" id="chart3">
+		<canvas class="chartVis" id="chart3Vis" width="400" height="400"></canvas></div>
+	<div class="buttons">
+		<button class="button" id="chart1"><h2>Chart 1<h2></button>
+		<button class="button" id="chart2"><h2>Chart 2<h2></button>
+		<button class="button" id="chart3"><h2>Chart 3<h2></button></div>
+	<!-- === HTML Content End === -->
+
+	<!-- === Scripts === -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+	<script src="chart1.js"></script>
+	<script src="chart2.js"></script>
+	<script src="chart3.js"></script>
+	<script type="text/javascript">
+		$('.button').click(function() {
+			$('.chart').hide();
+			$('#'+this.id).show();
+		});
+	</script>
+	<!-- === Scripts End === -->
+</body>
+</html>
