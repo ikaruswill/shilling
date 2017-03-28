@@ -3,6 +3,7 @@ from flask import Flask, jsonify, make_response, request
 import os
 import json
 import logging
+import requests
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
@@ -25,14 +26,13 @@ def webhook():
     if data['object'] == 'page':
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
-
                 # receive a message
                 if messaging_event.get('message'):
 
                     sender_id = messaging_event['sender']['id'] # sender facebook ID
                     recipient_id = messaging_event['recipient']['id']  # our page ID
                     message_text = messaging_event['message']['text']
-                    logging.debug('received message', message_text)
+                    logging.debug('received message ' + message_text)
                     send_message(sender_id, 'RECEIVED')
 
                 if messaging_event.get('delivery'):  # delivery confirmation
