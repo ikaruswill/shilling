@@ -2,12 +2,15 @@ from flask import Flask, jsonify, make_response, request
 
 import os
 import json
+import logging
 
+logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def verify():
+    logging.debug('/ GET')
     if request.args.get('hub.mode') == 'subscribe' and request.args.get('hub.challenge'):
         if not request.args.get('hub.verify_token') == os.environ['VERIFY_TOKEN']:
             return 'Token Mismatch', 403
@@ -16,6 +19,7 @@ def verify():
 
 @app.route('/', methods=['POST'])
 def webhook():
+    logging.debug('/ POST')
     data = request.get_json()
 
     if data['object'] == 'page':
@@ -28,7 +32,7 @@ def webhook():
                     sender_id = messaging_event['sender']['id'] # sender facebook ID
                     recipient_id = messaging_event['recipient']['id']  # our page ID
                     message_text = messaging_event['message']['text']
-
+                    logging.debug('received message', message_text)
                     send_message(sender_id, 'RECEIVED')
 
                 if messaging_event.get('delivery'):  # delivery confirmation
