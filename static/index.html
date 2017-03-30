@@ -31,12 +31,20 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
 	<script src="chart1.js"></script>
-	<script src="chart2.js"></script>
-	<script src="chart3.js"></script>
 	<script type="text/javascript">
+		var isChart2Loaded = false;
+		var isChart3Loaded = false;
 		$('.button').click(function() {
-			$('.chart').hide();
-			$('#'+this.id).show();
+			$('.chart').hide(); //hide all charts
+			$('#'+this.id).show(); //only show selected chart
+			if (this.id === "chart2" && !isChart2Loaded) {
+				$.getScript("chart2.js");
+				isChart2Loaded = true;
+			}
+			if (this.id === "chart3" && !isChart3Loaded) {
+				$.getScript("chart3.js");
+				isChart3Loaded = true;
+			}
 		});
 	</script>
 	<!-- === Scripts End === -->
