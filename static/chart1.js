@@ -1,4 +1,5 @@
 var chart1Data = data; //TODO: Parse this to proper format for visualisation
+var chart1Option = option; //[weekly|monthly|yearly]
 
 var ctx = document.getElementById("chart1Vis").getContext("2d");
 
