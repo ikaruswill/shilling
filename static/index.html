@@ -39,19 +39,28 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
 	<script type="text/javascript">
 
-		$.getScript("chart1.js");
-
 		var option = "weekly";
-		var chart="chart1";
+		var chart = "chart1";
+		var url = "http://ks-uppercut.github.io/"; //TODO: replace this with correct url
+		var userId = 0; //TODO: get from url parameter
+		var data = undefined;
 
-		$('.chartButton').click(function() {
-			chart = this.id;
-			buttonClick();
-		});
-
-		$('.optionButton').click(function() {
-			option = this.id;
-			buttonClick();
+		$.get(url, {userId : userId}, function(result) {
+				data = result;
+				$.getScript("chart1.js");
+				$('.chartButton').click(function() {
+					chart = this.id;
+					buttonClick();
+				});
+				$('.optionButton').click(function() {
+					option = this.id;
+					buttonClick();
+				});
+		    }
+		).fail(function() {
+		    console.log( "=== Error fetching data from " + url + " ===");
+		}).always(function() {
+		    console.log( "=== Finished fecthing data from " + url + " ===");
 		});
 
 		function buttonClick() {

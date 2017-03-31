@@ -1,3 +1,5 @@
+var chart3Data = data; //TODO: Parse this to proper format for visualisation
+
 var ctx = document.getElementById("chart3Vis").getContext("2d");
 
 var myBarChart = new Chart(ctx, {

@@ -1,3 +1,5 @@
+var chart2Data = data; //TODO: Parse this to proper format for visualisation
+
 var ctx = document.getElementById("chart2Vis").getContext("2d");
 
 var myLineChart = new Chart(ctx, {

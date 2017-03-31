@@ -1,3 +1,5 @@
+var chart1Data = data; //TODO: Parse this to proper format for visualisation
+
 var ctx = document.getElementById("chart1Vis").getContext("2d");
 
 var myDoughnutChart = new Chart(ctx, {
