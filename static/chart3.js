@@ -37,6 +37,6 @@ var myBarChart = new Chart(ctx, {
                 stacked: true
             }]
         },
-        responsive: false
+        responsive: true
     }
 });
