@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, make_response, request
-
+from flask_cors import CORS
+from databaseConnector import DatabaseConnector
 import os
 import json
 import logging
@@ -8,6 +9,7 @@ import requests
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost"}})
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -45,9 +47,26 @@ def webhook():
 @app.route('/summary', methods=['GET'])
 def get_summary():
     user_id = request.args.get('userId')
+    start_time = request.args.get('start')
+    end_time = request.args.get('end')
     if not user_id:
-        return 'Missing User ID', 403
-    return 'SUMMARY IN RETURN', 200
+        return 'Missing userId parameter', 403
+    elif not start_time:
+        return 'Missing start parameter', 403
+    elif not end_time:
+        return 'Missing end parameter', 403
+
+    try:
+        int(start_time)
+    except ValueError:
+        return 'start parameter has to be integer', 403
+
+    try:
+        int(end_time)
+    except ValueError:
+        return 'end parameter has to be integer', 403
+
+    return jsonify(DatabaseConnector().get_summary(user_id, start_time, end_time))
 
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
