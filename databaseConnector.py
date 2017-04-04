@@ -20,12 +20,13 @@ class DatabaseConnector:
         cursor = DatabaseConnector.instance.cnx.cursor()
         query = "SELECT t.item, t.amount, c.name, t.date\
                     FROM transaction t, category c\
-                    WHERE t.date BETWEEN %s AND %s\
-                    AND t.user_id = user_id\
+                    WHERE (t.date BETWEEN %s AND %s)\
+                    AND t.user_id = %s\
                     AND t.category_id = c.id"
         cursor.execute(query,
             (datetime.utcfromtimestamp(int(start_time) / 1000.0),
-            datetime.utcfromtimestamp(int(end_time) / 1000.0)))
+            datetime.utcfromtimestamp(int(end_time) / 1000.0),
+            user_id))
 
         epoch = datetime.utcfromtimestamp(0)
         return [{
@@ -49,3 +50,5 @@ class DatabaseConnector:
                     VALUES (%s, %s, %s)"
         cursor.execute(query, (first_name, last_name, fb_user_id))
         DatabaseConnector.instance.cnx.commit()
+
+DatabaseConnector().get_summary
