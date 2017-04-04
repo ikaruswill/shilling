@@ -3,6 +3,9 @@ var chart1Option = option; //[weekly|monthly|yearly]
 
 var ctx = document.getElementById("chart1Vis").getContext("2d");
 
+ctx.canvas.width = 300;
+ctx.canvas.height = 300;
+
 var myDoughnutChart = new Chart(ctx, {
     type: 'doughnut',
     data : {
@@ -28,6 +31,6 @@ var myDoughnutChart = new Chart(ctx, {
         ]
     },
     options: {
-        responsive: true
+        responsive: false
     }
 });
