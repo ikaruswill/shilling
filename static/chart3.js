@@ -3,6 +3,9 @@ var chart3Option = option; //[weekly|monthly|yearly]
 
 var ctx = document.getElementById("chart3Vis").getContext("2d");
 
+ctx.canvas.width = 300;
+ctx.canvas.height = 300;
+
 var myBarChart = new Chart(ctx, {
     type: 'horizontalBar',
     data: {
@@ -40,6 +43,6 @@ var myBarChart = new Chart(ctx, {
                 stacked: true
             }]
         },
-        responsive: true
+        responsive: false
     }
 });

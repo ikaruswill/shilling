@@ -12,16 +12,19 @@
 				  		margin-left: auto; margin-right: auto; padding: 5px; margin-bottom: 5px;}
 		.chart#chart2 { display: none; }
 		.chart#chart3 { display: none; }
-		.chart 		  { position: relative; }
+		.chart 		  { position: relative; width: 300px; height: 300px;
+						margin-right: auto; margin-left: auto; }
 		.chartVis 	  { margin-right: auto; margin-left: auto; margin-bottom: 20px; }
-		.progress     { width: 300px; border-radius: 2px;
+		.progress     { width: 300px; border-radius: 2px; margin-right: auto; margin-left: auto;
 						background-color: #36A2EB; position: relative; }
 		.bar 		  { width: 0%; height: 10px; border-radius: 2px; background-color: #FFCE56; }
 		.goal 		  { position: absolute; width: 5px; height: 10px;
-						background-color: #FF6384; left: 70%;}
-		.goalText 	  { position: absolute; width: 5px; height: 10px; top: -14px; left: 67%;
-						font-size: 12px; }
-		.mascot		  { position: absolute; top: 108px; right: 92px; width: 120px;}
+						background-color: #FF6384; left: 70%; }
+		.goalText 	  { position: absolute; width: 5px; height: 10px; 
+						top: -14px; left: 67%; font-size: 12px; }
+		.mascotCont	  { position:absolute; top:0; left:0; width: 100%; 
+						height: 100%; text-align: center; }
+		.mascot		  { width: 120px; margin-top: 106px;}
 	</style>
 </head>
 <body>
@@ -33,11 +36,11 @@
 		<div class="bar"></div></div><br>
 	<div class="chart" id="chart1">
 		<canvas class="chartVis" id="chart1Vis" width="300" height="300"></canvas>
-		<img class="mascot" src="mascot.png"></div>
+		<div class="mascotCont"><img class="mascot" src="mascot.png"></div></div>
 	<div class="chart" id="chart2">
 		<canvas class="chartVis" id="chart2Vis" width="300" height="300"></canvas></div>
 	<div class="chart" id="chart3">
-		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div>
+		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div><br>
 	<div class="buttons">
 		<button class="chartButton" id="chart1">Chart 1</button>
 		<button class="chartButton" id="chart2">Chart 2</button>

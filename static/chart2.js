@@ -3,6 +3,9 @@ var chart2Option = option; //[weekly|monthly|yearly]
 
 var ctx = document.getElementById("chart2Vis").getContext("2d");
 
+ctx.canvas.width = 300;
+ctx.canvas.height = 300;
+
 var myLineChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -33,6 +36,6 @@ var myLineChart = new Chart(ctx, {
         ]
     },
     options: {
-        responsive: true
+        responsive: false
     }
 });
