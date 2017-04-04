@@ -34,3 +34,18 @@ class DatabaseConnector:
             'category_id': category_id,
             'date': (date - epoch).total_seconds() * 1000
         } for (item, amount, category_id, date) in cursor]
+
+    def add_user(self, first_name, last_name, fb_user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        query = "SELECT count(*) FROM user WHERE app_user_id = %s"
+        cursor.execute(query, (fb_user_id, ))
+        count = cursor.fetchone()[0]
+        if count is not None and count > 0:
+            return
+
+        query = "INSERT INTO user\
+                    (first_name, last_name, app_user_id)\
+                    VALUES (%s, %s, %s)"
+        cursor.execute(query, (first_name, last_name, fb_user_id))
+        DatabaseConnector.instance.cnx.commit()

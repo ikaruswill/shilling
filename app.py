@@ -29,6 +29,7 @@ def webhook():
         for entry in data['entry']:
             for messaging_event in entry['messaging']:
                 print(messaging_event)
+                add_user_if_new(messaging_event)
 
                 if messaging_event.get('message'): # receive a message
                     handle_message(messaging_event)
@@ -67,6 +68,16 @@ def get_summary():
         return 'end parameter has to be integer', 403
 
     return jsonify(DatabaseConnector().get_summary(user_id, start_time, end_time))
+
+def add_user_if_new(messaging_event):
+    sender_id = messaging_event['sender']['id'] # sender facebook ID
+    params = get_send_params()
+    headers = get_send_headers()
+    r = requests.get('https://graph.facebook.com/v2.6/' + sender_id + '?fields=first_name,last_name', params=params, headers=headers)
+    after_request(r)
+    user_profile = json.loads(r.text)
+    if user_profile.get('first_name') and user_profile.get('last_name'):
+        DatabaseConnector().add_user(user_profile['first_name'], user_profile['last_name'], sender_id)
 
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
@@ -266,14 +277,17 @@ def send_quick_reply(recipient_id, message_text, quick_replies):
     })
     call_send_api(data)
 
-def call_send_api(data):
-    params = get_send_params()
-    headers = get_send_headers()
-    r = requests.post('https://graph.facebook.com/v2.6/me/messages', params=params, headers=headers, data=data)
+def after_request(r):
     if r.status_code != 200:
         print('fail to send message')
         print(r.status_code)
         print(r.text)
+
+def call_send_api(data):
+    params = get_send_params()
+    headers = get_send_headers()
+    r = requests.post('https://graph.facebook.com/v2.6/me/messages', params=params, headers=headers, data=data)
+    after_request(r)
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
