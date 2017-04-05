@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 from databaseConnector import DatabaseConnector
+from parser import Parser
 import os
 import json
 import logging
@@ -123,7 +124,7 @@ def handle_message(messaging_event):
         ])
     else:
         # NORMAL MESSAGE
-        send_message(sender_id, 'Received ;)')
+        send_message(sender_id, Parser().wit_parse_message(message_text))
 
     if messaging_event['message'].get('quick_reply'):
         handle_quick_reply(messaging_event)
