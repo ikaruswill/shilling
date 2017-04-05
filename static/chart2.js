@@ -1,7 +1,10 @@
 var ctx = document.getElementById("chart2Vis").getContext("2d");
-
 ctx.canvas.width = 300;
 ctx.canvas.height = 300;
+
+if (myLineChart !== undefined) {
+    myLineChart.destroy();
+}
 
 var myLineChart = new Chart(ctx, {
     type: 'line',
