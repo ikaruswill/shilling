@@ -13,6 +13,8 @@ class Parser:
             Parser.instance
 
     def wit_parse_message(self, message):
+        if message == '':
+            return 'Where is the text? 🤔'
         resp = Parser.instance.witClient.message(message)
         entities = resp.get('entities')
         if entities:

@@ -83,7 +83,7 @@ def add_user_if_new(messaging_event):
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
     recipient_id = messaging_event['recipient']['id']  # our page ID
-    message_text = messaging_event['message']['text']
+    message_text = messaging_event['message'].get('text') or ''
 
     logging.debug('received message ' + message_text)
     print('received message', message_text)
@@ -143,7 +143,7 @@ def handle_quick_reply(messaging_event):
 
 def get_send_params():
     return {
-        'access_token':
+        'access_token': ''
     }
 
 def get_send_headers():
