@@ -116,13 +116,12 @@
 		}
 
 		function getEarliestTime(option) {
-			var currentTime = (new Date).getTime();
 			if (option === 'weekly') {
-				return currentTime - 657000000;
+				return end - 657000000;
 			} else if (option === 'monthly') {
-				return currentTime - 2628000000;
+				return end - 2628000000;
 			} else if (option === 'yearly') {
-				return currentTime - 31536000000;
+				return end - 31536000000;
 			}
 		}
 
