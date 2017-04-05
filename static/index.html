@@ -10,6 +10,8 @@
 		.optionButton { background-color: #FF6384; color:white; width: 80px; cursor: pointer;
 				  		text-decoration: none; border-radius: 5px; border: none; outline: none;
 				  		margin-left: auto; margin-right: auto; padding: 5px; margin-bottom: 5px;}
+		.button 	  { opacity: 0.5; }
+		.activeButton { opacity: 1; }
 		.chart#chart2 { display: none; }
 		.chart#chart3 { display: none; }
 		.chart 		  { position: relative; width: 300px; height: 300px;
@@ -42,13 +44,13 @@
 	<div class="chart" id="chart3">
 		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div>
 	<br><div class="buttons">
-		<button class="chartButton" id="chart1">Pie</button>
-		<button class="chartButton" id="chart2">Trend</button>
-		<button class="chartButton" id="chart3">List</button></div>
+		<button class="activeButton button chartButton" id="chart1">Pie</button>
+		<button class="button chartButton" id="chart2">Trend</button>
+		<button class="button chartButton" id="chart3">List</button></div>
 	<div class="buttons">
-		<button class="optionButton" id="lastDay">Past Day</button>
-		<button class="optionButton" id="lastWeek">Past Week</button>
-		<button class="optionButton" id="lastMonth">Past Month</button></div>
+		<button class="activeButton button optionButton" id="lastDay">Past Day</button>
+		<button class="button optionButton" id="lastWeek">Past Week</button>
+		<button class="button optionButton" id="lastMonth">Past Month</button></div>
 	<!-- === HTML Content End === -->
 
 	<!-- === Scripts === -->
@@ -73,10 +75,14 @@
 			$.getScript("chart1.js");
 			$('.chartButton').click(function() {
 				chart = this.id;
+				$('.chartButton').removeClass("activeButton");
+				$(this).addClass("activeButton");
 				buttonClick();
 			});
 			$('.optionButton').click(function() {
 				option = this.id;
+				$('.optionButton').removeClass("activeButton");
+				$(this).addClass("activeButton");
 				buttonClick();
 			});
 	    }).fail(function() {
