@@ -23,8 +23,8 @@
 		.goalText 	  { position: absolute; width: 5px; height: 10px; 
 						top: -14px; left: 67%; font-size: 12px; }
 		.mascotCont	  { position:absolute; top:0; left:0; width: 100%; 
-						height: 100%; text-align: center; }
-		.mascot		  { width: 120px; margin-top: 106px;}
+						height: 100%; text-align: center; z-index: -100; }
+		.mascot		  { width: 130px; margin-top: 85px;}
 	</style>
 </head>
 <body>
@@ -40,8 +40,8 @@
 	<div class="chart" id="chart2">
 		<canvas class="chartVis" id="chart2Vis" width="300" height="300"></canvas></div>
 	<div class="chart" id="chart3">
-		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div><br>
-	<div class="buttons">
+		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div>
+	<br><div class="buttons">
 		<button class="chartButton" id="chart1">Chart 1</button>
 		<button class="chartButton" id="chart2">Chart 2</button>
 		<button class="chartButton" id="chart3">Chart 3</button></div>
@@ -54,15 +54,20 @@
 	<!-- === Scripts === -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 	<script type="text/javascript">
+
+		var server = "https://shilling.ikaruswill.com/summary?";
+		var userId = getURLParameter('userId') === null ? 1 : getURLParameter('userId');
+		var start = getURLParameter('start') === null ? 1488326400000 : getURLParameter('start');
+		var end = getURLParameter('end') === null ? 1489104000000 : getURLParameter('end');
+		var url = server + 'userId=' + userId + '&start=' + start + '&end=' + end;
+		var data = undefined;
 
 		var option = "weekly";
 		var chart = "chart1";
-		var url = "http://ks-uppercut.github.io/"; //TODO: replace this with correct url
-		var userId = 0; //TODO: get from url parameter
-		var data = undefined;
 
-		$.get(url, {userId : userId}, function(result) {
+		$.get(url, {}, function(result) {
 			data = result;
 			moveProgressBar();
 			$.getScript("chart1.js");
@@ -90,6 +95,35 @@
 
 		function moveProgressBar() {
 			$( ".bar" ).animate({width: "+=90%"}, 2000);
+		}
+
+		function getURLParameter(name) {
+  			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+		}
+
+		function getCategoryList(data) {
+		    var categoryList = [];
+		    _.each(data, function(transaction, index, transactions) {
+		        var category = transaction.category_id;
+		        var isLogged = _.find(categoryList, function(item){ 
+		            return item === category; 
+		        });
+		        if (isLogged === undefined) {
+		            categoryList.push(category);
+		        }
+		    });
+		    return categoryList;
+		}
+
+		function getEarliestTime(option) {
+			var currentTime = (new Date).getTime();
+			if (option === 'weekly') {
+				return currentTime - 657000000;
+			} else if (option === 'monthly') {
+				return currentTime - 2628000000;
+			} else if (option === 'yearly') {
+				return currentTime - 31536000000;
+			}
 		}
 
 	</script>

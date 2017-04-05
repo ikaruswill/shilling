@@ -1,6 +1,3 @@
-var chart3Data = data; //TODO: Parse this to proper format for visualisation
-var chart3Option = option; //[weekly|monthly|yearly]
-
 var ctx = document.getElementById("chart3Vis").getContext("2d");
 
 ctx.canvas.width = 300;

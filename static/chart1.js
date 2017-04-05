@@ -1,5 +1,15 @@
-var chart1Data = data; //TODO: Parse this to proper format for visualisation
-var chart1Option = option; //[weekly|monthly|yearly]
+var categoryList = getCategoryList(data);
+var earliestTime = getEarliestTime(option);
+var chartData = [];
+_.each(categoryList, function(category, index, categories) {
+    var total = 0;
+    _.each(data, function(transaction, index, transactions) {
+        if (transaction.category_id === category) {
+            total -= transaction.amount;
+        }
+    });
+    chartData.push(total);
+});
 
 var ctx = document.getElementById("chart1Vis").getContext("2d");
 
@@ -9,14 +19,10 @@ ctx.canvas.height = 300;
 var myDoughnutChart = new Chart(ctx, {
     type: 'doughnut',
     data : {
-        labels: [
-            "Red",
-            "Blue",
-            "Yellow"
-        ],
+        labels: categoryList,
         datasets: [
             {
-                data: [300, 50, 100],
+                data: chartData,
                 backgroundColor: [
                     "#FF6384",
                     "#36A2EB",
@@ -31,6 +37,9 @@ var myDoughnutChart = new Chart(ctx, {
         ]
     },
     options: {
-        responsive: false
+        responsive: false,
+        legend: {
+            display: false
+         }
     }
 });
