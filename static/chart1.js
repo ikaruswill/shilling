@@ -1,5 +1,5 @@
 var chartData = [];
-var title = "Expenditure in past 7 days";
+var title = "Past day's expenditure";
 var categoryList = getCategoryList(data);
 var earliestTime = getEarliestTime(option);
 var colors = ["#1abc9c", "#f1c40f", "#3498db", "#e74c3c", "#34495e", "#95a5a6",
@@ -16,10 +16,10 @@ _.each(categoryList, function(category, index, categories) {
     chartData.push(total);
 });
 
-if (option === "monthly") {
-    title = "Expenditure in past 1 month";
-} else if (option === "yearly") {
-    title = "Expenditure in past 1 year"
+if (option === "lastWeek") {
+    title = "Past week's expenditure";
+} else if (option === "lastMonth") {
+    title = "Past month's expenditure"
 }
 
 if (myDoughnutChart !== undefined) {

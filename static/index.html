@@ -42,13 +42,13 @@
 	<div class="chart" id="chart3">
 		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div>
 	<br><div class="buttons">
-		<button class="chartButton" id="chart1">Chart 1</button>
-		<button class="chartButton" id="chart2">Chart 2</button>
-		<button class="chartButton" id="chart3">Chart 3</button></div>
+		<button class="chartButton" id="chart1">Pie</button>
+		<button class="chartButton" id="chart2">Trend</button>
+		<button class="chartButton" id="chart3">List</button></div>
 	<div class="buttons">
-		<button class="optionButton" id="weekly">Weekly</button>
-		<button class="optionButton" id="monthly">Monthly</button>
-		<button class="optionButton" id="yearly">Yearly</button></div>
+		<button class="optionButton" id="lastDay">Past Day</button>
+		<button class="optionButton" id="lastWeek">Past Week</button>
+		<button class="optionButton" id="lastMonth">Past Month</button></div>
 	<!-- === HTML Content End === -->
 
 	<!-- === Scripts === -->
@@ -64,7 +64,7 @@
 		var url = server + 'userId=' + userId + '&start=' + start + '&end=' + end;
 		var data = undefined;
 
-		var option = "weekly";
+		var option = "lastDay";
 		var chart = "chart1";
 
 		$.get(url, {}, function(result) {
@@ -116,12 +116,12 @@
 		}
 
 		function getEarliestTime(option) {
-			if (option === 'weekly') {
+			if (option === 'lastDay') {
+				return end - 86400000;
+			} else if (option === 'lastWeek') {
 				return end - 657000000;
-			} else if (option === 'monthly') {
+			} else if (option === 'lastMonth') {
 				return end - 2628000000;
-			} else if (option === 'yearly') {
-				return end - 31536000000;
 			}
 		}
 
