@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, make_response, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
 import os
 import json
@@ -9,7 +9,7 @@ import requests
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -46,6 +46,7 @@ def webhook():
     return 'ok', 200
 
 @app.route('/summary', methods=['GET'])
+@cross_origin()
 def get_summary():
     user_id = request.args.get('userId')
     start_time = request.args.get('start')
