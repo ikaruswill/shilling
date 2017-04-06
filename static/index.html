@@ -10,11 +10,14 @@
 		.optionButton { background-color: #FF6384; color:white; width: 80px; cursor: pointer;
 				  		text-decoration: none; border-radius: 5px; border: none; outline: none;
 				  		margin-left: auto; margin-right: auto; padding: 5px; margin-bottom: 5px;}
+		.button 	  { opacity: 0.5; }
+		.activeButton { opacity: 1; }
 		.chart#chart2 { display: none; }
-		.chart#chart3 { display: none; }
+		.chart#chart3 { display: none; position: relative; }
 		.chart 		  { position: relative; width: 300px; height: 300px;
 						margin-right: auto; margin-left: auto; }
 		.chartVis 	  { margin-right: auto; margin-left: auto; margin-bottom: 20px; }
+		#chart3Vis	  { height: 300px; overflow: auto; }
 		.progress     { width: 300px; border-radius: 2px; margin-right: auto; margin-left: auto;
 						background-color: #36A2EB; position: relative; }
 		.bar 		  { width: 0%; height: 10px; border-radius: 2px; background-color: #FFCE56; }
@@ -23,8 +26,15 @@
 		.goalText 	  { position: absolute; width: 5px; height: 10px; 
 						top: -14px; left: 67%; font-size: 12px; }
 		.mascotCont	  { position:absolute; top:0; left:0; width: 100%; 
-						height: 100%; text-align: center; }
+						height: 100%; text-align: center; z-index: -100; }
 		.mascot		  { width: 120px; margin-top: 106px;}
+		#chart3 table { width: 100%; }
+		td 			  { background-color: #89C4F4; border-radius: 5px; font-size: 12px;
+						height: 10px; overflow: scroll; padding: 8px; }
+		#chart3 table
+		thead th 
+		.text 		  { position:absolute; top:-20px; z-index:2; height:20px; 
+						width:35%; border:1px solid red; }
 	</style>
 </head>
 <body>
@@ -40,38 +50,53 @@
 	<div class="chart" id="chart2">
 		<canvas class="chartVis" id="chart2Vis" width="300" height="300"></canvas></div>
 	<div class="chart" id="chart3">
-		<canvas class="chartVis" id="chart3Vis" width="300" height="300"></canvas></div><br>
+		<div class="chartVis" id="chart3Vis" width="300" height="300">
+			<table id="table" class="display">
+			    <thead><tr><th>$</th><th>Category</th><th>Item</th></tr></thead>
+			    <tbody></tbody>
+			</table>
+		</div>
+	</div>
+	<br><div class="buttons">
+		<button class="activeButton button chartButton" id="chart1">Pie</button>
+		<button class="button chartButton" id="chart2">Trend</button>
+		<button class="button chartButton" id="chart3">List</button></div>
 	<div class="buttons">
-		<button class="chartButton" id="chart1">Chart 1</button>
-		<button class="chartButton" id="chart2">Chart 2</button>
-		<button class="chartButton" id="chart3">Chart 3</button></div>
-	<div class="buttons">
-		<button class="optionButton" id="weekly">Weekly</button>
-		<button class="optionButton" id="monthly">Monthly</button>
-		<button class="optionButton" id="yearly">Yearly</button></div>
+		<button class="activeButton button optionButton" id="lastDay">Past Day</button>
+		<button class="button optionButton" id="lastWeek">Past Week</button>
+		<button class="button optionButton" id="lastMonth">Past Month</button></div>
 	<!-- === HTML Content End === -->
 
 	<!-- === Scripts === -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 	<script type="text/javascript">
 
-		var option = "weekly";
-		var chart = "chart1";
-		var url = "http://ks-uppercut.github.io/"; //TODO: replace this with correct url
-		var userId = 0; //TODO: get from url parameter
+		var server = "https://shilling.ikaruswill.com/summary?";
+		var userId = getURLParameter('userId') === null ? 1 : getURLParameter('userId');
+		var start = getURLParameter('start') === null ? 1488326400000 : getURLParameter('start');
+		var end = getURLParameter('end') === null ? 1489104000000 : getURLParameter('end');
+		var url = server + 'userId=' + userId + '&start=' + start + '&end=' + end;
 		var data = undefined;
 
-		$.get(url, {userId : userId}, function(result) {
+		var option = "lastDay";
+		var chart = "chart1";
+
+		$.get(url, {}, function(result) {
 			data = result;
 			moveProgressBar();
 			$.getScript("chart1.js");
 			$('.chartButton').click(function() {
 				chart = this.id;
+				$('.chartButton').removeClass("activeButton");
+				$(this).addClass("activeButton");
 				buttonClick();
 			});
 			$('.optionButton').click(function() {
 				option = this.id;
+				$('.optionButton').removeClass("activeButton");
+				$(this).addClass("activeButton");
 				buttonClick();
 			});
 	    }).fail(function() {
@@ -90,6 +115,37 @@
 
 		function moveProgressBar() {
 			$( ".bar" ).animate({width: "+=90%"}, 2000);
+		}
+
+		function getURLParameter(name) {
+  			return decodeURIComponent((
+  				new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)')
+  				.exec(location.search) || [null, ''])[1]
+  				.replace(/\+/g, '%20')) || null;
+		}
+
+		function getCategoryList(data) {
+		    var categoryList = [];
+		    _.each(data, function(transaction, index, transactions) {
+		        var category = transaction.category_id;
+		        var isLogged = _.find(categoryList, function(item){ 
+		            return item === category; 
+		        });
+		        if (isLogged === undefined) {
+		            categoryList.push(category);
+		        }
+		    });
+		    return categoryList;
+		}
+
+		function getEarliestTime(option) {
+			if (option === 'lastDay') {
+				return end - 86400000;
+			} else if (option === 'lastWeek') {
+				return end - 657000000;
+			} else if (option === 'lastMonth') {
+				return end - 2628000000;
+			}
 		}
 
 	</script>

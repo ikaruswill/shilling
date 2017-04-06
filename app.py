@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
+from parser import Parser
 import os
 import json
 import logging
@@ -83,7 +84,7 @@ def add_user_if_new(messaging_event):
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
     recipient_id = messaging_event['recipient']['id']  # our page ID
-    message_text = messaging_event['message']['text']
+    message_text = messaging_event['message'].get('text') or ''
 
     logging.debug('received message ' + message_text)
     print('received message', message_text)
@@ -124,7 +125,7 @@ def handle_message(messaging_event):
         ])
     else:
         # NORMAL MESSAGE
-        send_message(sender_id, 'Received ;)')
+        send_message(sender_id, Parser().wit_parse_message(message_text))
 
     if messaging_event['message'].get('quick_reply'):
         handle_quick_reply(messaging_event)
@@ -143,7 +144,7 @@ def handle_quick_reply(messaging_event):
 
 def get_send_params():
     return {
-        'access_token':
+        'access_token': ''
     }
 
 def get_send_headers():
