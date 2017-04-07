@@ -13,6 +13,16 @@ logging.basicConfig(filename='app.log',level=logging.DEBUG)
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+PAYLOAD_CATEGORIES = {
+    'PAYLOAD_CAT_FOOD': 'Food',
+    'PAYLOAD_CAT_TRANSPORT': 'Transport',
+    'PAYLOAD_CAT_GROCERIES': 'Groceries',
+    'PAYLOAD_CAT_ENTERTAINMENT': 'Entertainment',
+    'PAYLOAD_CAT_BILLS': 'Bills',
+    'PAYLOAD_CAT_RENTAL': 'Rental',
+    'PAYLOAD_CAT_OTHERS': 'Others'
+}
+
 @app.route('/', methods=['GET'])
 def verify():
     logging.debug('/ GET')
@@ -92,7 +102,9 @@ def handle_message(messaging_event):
 
     send_typing_action(sender_id)
 
-    if message_text == 'button':
+    if messaging_event['message'].get('quick_reply'):
+        handle_quick_reply(messaging_event)
+    elif message_text == 'button':
         # EXAMPLE OF SENDING BUTTON MESSAGE
         send_button_message(sender_id, 'Button Template', [
             get_url_button('Google', 'https://www.google.com'),
@@ -128,27 +140,38 @@ def handle_message(messaging_event):
         # NORMAL MESSAGE
         task = Parser().wit_parse_message(message_text)
         if task['intent'] == 'transaction':
+            TransactionTask(sender_id, task['item'], -task['amount']).execute()
+            quick_replies = [get_quick_reply(PAYLOAD_CATEGORIES[payload], payload) for payload in sorted(PAYLOAD_CATEGORIES.keys())]
+            send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
+        elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
-        send_message(sender_id, task['reply'])
-
-    if messaging_event['message'].get('quick_reply'):
-        handle_quick_reply(messaging_event)
+        else:
+            send_message(sender_id, task['reply'])
 
 def handle_postback(messaging_event):
     print('received postback', messaging_event)
     sender_id = messaging_event['sender']['id'] # sender facebook ID
-    payload = messaging_event.get('postback').get('payload')
-    send_message(sender_id, 'Received postback ' + payload)
+    handle_payload(sender_id, messaging_event.get('postback').get('payload'))
 
 def handle_quick_reply(messaging_event):
     print('handle quick reply')
     sender_id = messaging_event['sender']['id'] # sender facebook ID
-    payload = messaging_event['message']['quick_reply'].get('payload')
-    send_message(sender_id, 'Received payload ' + payload)
+    handle_payload(sender_id, messaging_event['message']['quick_reply'].get('payload'))
+
+def handle_payload(sender_id, payload):
+    if payload.startswith('PAYLOAD_CAT'):
+        handle_payload_cat(sender_id, payload)
+    else:
+        send_message(sender_id, 'Received payload ' + payload)
+
+def handle_payload_cat(sender_id, payload):
+    category = PAYLOAD_CATEGORIES[payload]
+    transaction = DatabaseConnector().update_transaction(sender_id, category)
+    send_message(sender_id, 'TRANSACTION ADDED\nItem: '+transaction[0]+'\nPrice: '+str(-transaction[1])+'\nCategory: '+transaction[2])
 
 def get_send_params():
     return {
-        'access_token': ''
+        'access_token': '%token%'
     }
 
 def get_send_headers():

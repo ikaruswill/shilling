@@ -51,19 +51,53 @@ class DatabaseConnector:
         cursor.execute(query, (first_name, last_name, fb_user_id))
         DatabaseConnector.instance.cnx.commit()
 
+    def get_user_id(self, fb_user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+        query = "SELECT id FROM user WHERE app_user_id = %s"
+        cursor.execute(query, (fb_user_id, ))
+        return cursor.fetchone()[0]
+
     def add_transaction(self, fb_user_id, item, amount):
         cursor = DatabaseConnector.instance.cnx.cursor()
 
-        query = "SELECT id FROM user WHERE app_user_id = %s"
-        cursor.execute(query, (fb_user_id, ))
-        user_id = cursor.fetchone()[0]
+        user_id = self.get_user_id(fb_user_id)
         if user_id is None:
             return
 
         query = "INSERT INTO transaction\
                     (item, amount, category_id, user_id)\
                     VALUES (%s, %s, %s, %s)"
-        cursor.execute(query, (item, amount, 1, user_id))
+        cursor.execute(query, (item, amount, 28, user_id))
         DatabaseConnector.instance.cnx.commit()
+
+    def update_transaction(self, fb_user_id, category):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        user_id = self.get_user_id(fb_user_id)
+        if user_id is None:
+            return
+
+        query = "UPDATE transaction\
+                    SET category_id = (\
+                        SELECT id FROM category\
+                        WHERE name = %s\
+                    )\
+                    WHERE user_id = %s\
+                    ORDER BY date DESC LIMIT 1"
+        cursor.execute(query, (category, user_id))
+        DatabaseConnector.instance.cnx.commit()
+
+        return self.get_last_transaction(user_id)
+
+    def get_last_transaction(self, user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        query = "SELECT t.item, t.amount, c.name\
+                    FROM transaction t, category c\
+                    WHERE t.category_id = c.id\
+                    AND t.user_id = %s\
+                    ORDER BY date DESC LIMIT 1"
+        cursor.execute(query, (user_id,))
+        return cursor.fetchone()
 
 DatabaseConnector().get_summary

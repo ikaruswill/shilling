@@ -3,7 +3,7 @@ from wit import Wit
 class Parser:
     class __Parser:
         def __init__(self):
-            self.witClient = Wit(access_token='')
+            self.witClient = Wit(access_token='%token%')
 
     instance = None
     def __init__(self):
@@ -51,7 +51,7 @@ class Parser:
                 item_value = item[0]['value']
                 amount = amount_of_money[0]['value']
                 return self.build_task(
-                    'Add transaction:\nItem: ' + item_value + '\nPrice: ' + '$' + str(amount),
+                    '',
                     'transaction', item_value, amount
                     )
 
