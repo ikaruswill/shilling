@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
+from transactionTask import TransactionTask
 from parser import Parser
 import os
 import json
@@ -125,7 +126,10 @@ def handle_message(messaging_event):
         ])
     else:
         # NORMAL MESSAGE
-        send_message(sender_id, Parser().wit_parse_message(message_text))
+        task = Parser().wit_parse_message(message_text)
+        if task['intent'] == 'transaction':
+            TransactionTask(sender_id, task['item'], task['amount']).execute()
+        send_message(sender_id, task['reply'])
 
     if messaging_event['message'].get('quick_reply'):
         handle_quick_reply(messaging_event)

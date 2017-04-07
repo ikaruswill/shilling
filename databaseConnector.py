@@ -51,4 +51,19 @@ class DatabaseConnector:
         cursor.execute(query, (first_name, last_name, fb_user_id))
         DatabaseConnector.instance.cnx.commit()
 
+    def add_transaction(self, fb_user_id, item, amount):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        query = "SELECT id FROM user WHERE app_user_id = %s"
+        cursor.execute(query, (fb_user_id, ))
+        user_id = cursor.fetchone()[0]
+        if user_id is None:
+            return
+
+        query = "INSERT INTO transaction\
+                    (item, amount, category_id, user_id)\
+                    VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (item, amount, 1, user_id))
+        DatabaseConnector.instance.cnx.commit()
+
 DatabaseConnector().get_summary
