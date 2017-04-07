@@ -30,21 +30,22 @@ class Parser:
             item = entities.get('item')
             intent = entities.get('intent')
             if intent is not None:
-                if intent[0]['value'] == 'summary':
-                    return self.build_task('summary')
+                intent_value = intent[0]['value']
+                if ['summary', 'greet'].index(intent_value) > -1:
+                    return self.build_task(intent_value)
                 elif amount_of_money is not None:
                     amount = amount_of_money[0]['value']
-                    if intent[0]['value'] == 'savings':
+                    if intent_value == 'savings':
                         return self.build_task(
-                                'savings',
+                                intent_value,
                                 'Wah nowadays got people save money one a? ' + amount + ' only, might as well don\'t save',
                                 'savings', amount
                             )
-                    elif intent[0]['value'] == 'goal' and item is not None:
+                    elif intent_value == 'goal' and item is not None:
                         item_value = item[0]['value']
                         amount = amount_of_money[0]['value']
                         return self.build_task(
-                                'goal',
+                                intent_value,
                                 'Want to buy ' + '$' + str(amount) + ' ' + item_value + '? For real? :O',
                                 item_value, amount
                             )

@@ -23,6 +23,10 @@ PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
                                     ('PAYLOAD_CAT_RENTAL', 'Rental'),
                                     ('PAYLOAD_CAT_OTHERS', 'Others')])
 
+PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Add a transaction'),
+                            ('PAYLOAD_MENU_SAVINGS', 'Record my savings'),
+                            ('PAYLOAD_MENU_GOALS', 'Set a savings goal')])
+
 @app.route('/', methods=['GET'])
 def verify():
     logging.debug('/ GET')
@@ -151,12 +155,9 @@ def handle_message(messaging_event):
         elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
         elif task['intent'] == 'summary':
-            generated_url = SummaryTask(sender_id).execute()
-            send_generic_message(sender_id, [
-                get_generic_element('Expenses Summary', 'Chart view and table view', '', [
-                        get_url_button('Show me', generated_url)
-                    ])
-                ])
+            send_summary_template(sender_id)
+        elif task['intent'] == 'greet':
+            send_menu_buttons(sender_id)
         else:
             send_message(sender_id, task['reply'])
 
@@ -173,6 +174,8 @@ def handle_quick_reply(messaging_event):
 def handle_payload(sender_id, payload):
     if payload.startswith('PAYLOAD_CAT'):
         handle_payload_cat(sender_id, payload)
+    elif payload.startswith('PAYLOAD_MENU'):
+        handle_payload_menu(sender_id, payload)
     else:
         send_message(sender_id, 'Received payload ' + payload)
 
@@ -180,6 +183,17 @@ def handle_payload_cat(sender_id, payload):
     category = PAYLOAD_CATEGORIES[payload]
     transaction = DatabaseConnector().update_transaction(sender_id, category)
     send_message(sender_id, 'TRANSACTION ADDED\nItem: '+transaction[0]+'\nPrice: '+str(-transaction[1])+'\nCategory: '+transaction[2])
+
+def handle_payload_menu(sender_id, payload):
+    message = ''
+    if payload == 'PAYLOAD_MENU_TRANSACTION':
+        message = 'What did you spent on and how much is it?'
+    elif payload == 'PAYLOAD_MENU_SAVINGS':
+        message = 'Tell me how much you saved. For example: I saved $20'
+    elif payload == 'PAYLOAD_MENU_GOALS':
+        message = 'What is your savings goal?'
+
+    send_message(sender_id, message)
 
 def get_send_params():
     return {
@@ -226,6 +240,18 @@ def get_quick_reply(title, payload):
         'title': title,
         'payload': payload
     }
+
+def send_summary_template(sender_id):
+    generated_url = SummaryTask(sender_id).execute()
+    send_generic_message(sender_id, [
+        get_generic_element('Expenses Summary', 'Chart view and table view', '', [
+                get_url_button('Show me', generated_url)
+            ])
+        ])
+
+def send_menu_buttons(sender_id):
+    menu_buttons = [get_postback_button(PAYLOAD_MENUS[payload], payload) for payload in PAYLOAD_MENUS]
+    send_button_message(sender_id, 'Hi! What would you like to do?', menu_buttons)
 
 def send_message(recipient_id, message_text):
     data = json.dumps({
