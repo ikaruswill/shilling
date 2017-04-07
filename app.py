@@ -1,8 +1,10 @@
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, render_template
 from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
 from transactionTask import TransactionTask
+from summaryTask import SummaryTask
 from parser import Parser
+from collections import OrderedDict
 import os
 import json
 import logging
@@ -10,18 +12,16 @@ import requests
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./chart')
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-PAYLOAD_CATEGORIES = {
-    'PAYLOAD_CAT_FOOD': 'Food',
-    'PAYLOAD_CAT_TRANSPORT': 'Transport',
-    'PAYLOAD_CAT_GROCERIES': 'Groceries',
-    'PAYLOAD_CAT_ENTERTAINMENT': 'Entertainment',
-    'PAYLOAD_CAT_BILLS': 'Bills',
-    'PAYLOAD_CAT_RENTAL': 'Rental',
-    'PAYLOAD_CAT_OTHERS': 'Others'
-}
+PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
+                                    ('PAYLOAD_CAT_TRANSPORT', 'Transport'),
+                                    ('PAYLOAD_CAT_GROCERIES', 'Groceries'),
+                                    ('PAYLOAD_CAT_ENTERTAINMENT', 'Entertainment'),
+                                    ('PAYLOAD_CAT_BILLS', 'Bills'),
+                                    ('PAYLOAD_CAT_RENTAL', 'Rental'),
+                                    ('PAYLOAD_CAT_OTHERS', 'Others')])
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -82,6 +82,10 @@ def get_summary():
 
     return jsonify(DatabaseConnector().get_summary(user_id, start_time, end_time))
 
+@app.route('/chart', methods=['GET'])
+def get_chart_html():
+    return render_template('index.html')
+
 def add_user_if_new(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
     params = get_send_params()
@@ -139,12 +143,20 @@ def handle_message(messaging_event):
     else:
         # NORMAL MESSAGE
         task = Parser().wit_parse_message(message_text)
+        print('** TASK **', task)
         if task['intent'] == 'transaction':
             TransactionTask(sender_id, task['item'], -task['amount']).execute()
-            quick_replies = [get_quick_reply(PAYLOAD_CATEGORIES[payload], payload) for payload in sorted(PAYLOAD_CATEGORIES.keys())]
+            quick_replies = [get_quick_reply(PAYLOAD_CATEGORIES[payload], payload) for payload in PAYLOAD_CATEGORIES.keys()]
             send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
         elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
+        elif task['intent'] == 'summary':
+            generated_url = SummaryTask(sender_id).execute()
+            send_generic_message(sender_id, [
+                get_generic_element('Expenses Summary', 'Chart view and table view', '', [
+                        get_url_button('Show me', generated_url)
+                    ])
+                ])
         else:
             send_message(sender_id, task['reply'])
 
