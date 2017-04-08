@@ -31,15 +31,15 @@ class Parser:
             intent = entities.get('intent')
             if intent is not None:
                 intent_value = intent[0]['value']
-                if ['summary', 'greet'].index(intent_value) > -1:
+                if intent_value in ['summary', 'greet']:
                     return self.build_task(intent_value)
                 elif amount_of_money is not None:
                     amount = amount_of_money[0]['value']
                     if intent_value == 'savings':
                         return self.build_task(
                                 intent_value,
-                                'Wah nowadays got people save money one a? ' + amount + ' only, might as well don\'t save',
-                                'savings', amount
+                                '',
+                                'Savings', amount
                             )
                     elif intent_value == 'goal' and item is not None:
                         item_value = item[0]['value']

@@ -57,17 +57,25 @@ class DatabaseConnector:
         cursor.execute(query, (fb_user_id, ))
         return cursor.fetchone()[0]
 
-    def add_transaction(self, fb_user_id, item, amount):
+    def get_category_id(self, category):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+        query = "SELECT id FROM category WHERE name = %s"
+        cursor.execute(query, (category, ))
+        return cursor.fetchone()[0]
+
+    def add_transaction(self, fb_user_id, item, amount, category='Others'):
         cursor = DatabaseConnector.instance.cnx.cursor()
 
         user_id = self.get_user_id(fb_user_id)
         if user_id is None:
             return
 
+        category_id = self.get_category_id(category)
+
         query = "INSERT INTO transaction\
                     (item, amount, category_id, user_id)\
                     VALUES (%s, %s, %s, %s)"
-        cursor.execute(query, (item, amount, 28, user_id))
+        cursor.execute(query, (item, amount, category_id, user_id))
         DatabaseConnector.instance.cnx.commit()
 
     def update_transaction(self, fb_user_id, category):

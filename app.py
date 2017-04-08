@@ -154,6 +154,7 @@ def handle_message(messaging_event):
             send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
         elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
+            send_message(sender_id, get_transaction_added_msg(task['item'], task['amount'], 'Savings'))
         elif task['intent'] == 'summary':
             send_summary_template(sender_id)
         elif task['intent'] == 'greet':
@@ -182,7 +183,7 @@ def handle_payload(sender_id, payload):
 def handle_payload_cat(sender_id, payload):
     category = PAYLOAD_CATEGORIES[payload]
     transaction = DatabaseConnector().update_transaction(sender_id, category)
-    send_message(sender_id, 'TRANSACTION ADDED\nItem: '+transaction[0]+'\nPrice: '+str(-transaction[1])+'\nCategory: '+transaction[2])
+    send_message(sender_id, get_transaction_added_msg(transaction[0], -transaction[1], transaction[2]))
 
 def handle_payload_menu(sender_id, payload):
     message = ''
@@ -194,6 +195,9 @@ def handle_payload_menu(sender_id, payload):
         message = 'What is your savings goal?'
 
     send_message(sender_id, message)
+
+def get_transaction_added_msg(item, price, category):
+    return 'TRANSACTION ADDED\nItem: {}\nPrice: ${}\nCategory: {}'.format(item, price, category)
 
 def get_send_params():
     return {
