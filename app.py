@@ -12,7 +12,7 @@ import requests
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
-app = Flask(__name__, template_folder='./chart')
+app = Flask(__name__, template_folder='./static')
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
