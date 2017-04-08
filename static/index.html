@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 	<style>
 		body { background-color: #E1F5FE; font-family: 'Lato', sans-serif; text-align: center; }
@@ -23,17 +24,17 @@
 		.bar 		  { width: 0%; height: 10px; border-radius: 2px; background-color: #FFCE56; }
 		.goal 		  { position: absolute; width: 5px; height: 10px;
 						background-color: #FF6384; left: 70%; }
-		.goalText 	  { position: absolute; width: 5px; height: 10px; 
+		.goalText 	  { position: absolute; width: 5px; height: 10px;
 						top: -14px; left: 67%; font-size: 12px; }
-		.mascotCont	  { position:absolute; top:0; left:0; width: 100%; 
+		.mascotCont	  { position:absolute; top:0; left:0; width: 100%;
 						height: 100%; text-align: center; z-index: -100; }
 		.mascot		  { width: 120px; margin-top: 106px;}
 		#chart3 table { width: 100%; }
 		td 			  { background-color: #89C4F4; border-radius: 5px; font-size: 12px;
 						height: 10px; overflow: scroll; padding: 8px; }
 		#chart3 table
-		thead th 
-		.text 		  { position:absolute; top:-20px; z-index:2; height:20px; 
+		thead th
+		.text 		  { position:absolute; top:-20px; z-index:2; height:20px;
 						width:35%; border:1px solid red; }
 	</style>
 </head>
@@ -128,8 +129,8 @@
 		    var categoryList = [];
 		    _.each(data, function(transaction, index, transactions) {
 		        var category = transaction.category_id;
-		        var isLogged = _.find(categoryList, function(item){ 
-		            return item === category; 
+		        var isLogged = _.find(categoryList, function(item){
+		            return item === category;
 		        });
 		        if (isLogged === undefined) {
 		            categoryList.push(category);

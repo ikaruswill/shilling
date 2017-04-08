@@ -1,7 +1,10 @@
-from flask import Flask, jsonify, make_response, request
-from flask_cors import CORS
+from flask import Flask, jsonify, make_response, request, render_template
+from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
+from transactionTask import TransactionTask
+from summaryTask import SummaryTask
 from parser import Parser
+from collections import OrderedDict
 import os
 import json
 import logging
@@ -9,8 +12,20 @@ import requests
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
-app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost"}})
+app = Flask(__name__, template_folder='./chart')
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
+                                    ('PAYLOAD_CAT_TRANSPORT', 'Transport'),
+                                    ('PAYLOAD_CAT_GROCERIES', 'Groceries'),
+                                    ('PAYLOAD_CAT_ENTERTAINMENT', 'Entertainment'),
+                                    ('PAYLOAD_CAT_BILLS', 'Bills'),
+                                    ('PAYLOAD_CAT_RENTAL', 'Rental'),
+                                    ('PAYLOAD_CAT_OTHERS', 'Others')])
+
+PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Add a transaction'),
+                            ('PAYLOAD_MENU_SAVINGS', 'Record my savings'),
+                            ('PAYLOAD_MENU_GOALS', 'Set a savings goal')])
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -47,6 +62,7 @@ def webhook():
     return 'ok', 200
 
 @app.route('/summary', methods=['GET'])
+@cross_origin()
 def get_summary():
     user_id = request.args.get('userId')
     start_time = request.args.get('start')
@@ -70,6 +86,10 @@ def get_summary():
 
     return jsonify(DatabaseConnector().get_summary(user_id, start_time, end_time))
 
+@app.route('/chart', methods=['GET'])
+def get_chart_html():
+    return render_template('index.html')
+
 def add_user_if_new(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
     params = get_send_params()
@@ -90,7 +110,9 @@ def handle_message(messaging_event):
 
     send_typing_action(sender_id)
 
-    if message_text == 'button':
+    if messaging_event['message'].get('quick_reply'):
+        handle_quick_reply(messaging_event)
+    elif message_text == 'button':
         # EXAMPLE OF SENDING BUTTON MESSAGE
         send_button_message(sender_id, 'Button Template', [
             get_url_button('Google', 'https://www.google.com'),
@@ -124,26 +146,62 @@ def handle_message(messaging_event):
         ])
     else:
         # NORMAL MESSAGE
-        send_message(sender_id, Parser().wit_parse_message(message_text))
-
-    if messaging_event['message'].get('quick_reply'):
-        handle_quick_reply(messaging_event)
+        task = Parser().wit_parse_message(message_text)
+        print('** TASK **', task)
+        if task['intent'] == 'transaction':
+            TransactionTask(sender_id, task['item'], -task['amount']).execute()
+            quick_replies = [get_quick_reply(PAYLOAD_CATEGORIES[payload], payload) for payload in PAYLOAD_CATEGORIES.keys()]
+            send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
+        elif task['intent'] == 'savings':
+            TransactionTask(sender_id, task['item'], task['amount']).execute()
+            send_message(sender_id, get_transaction_added_msg(task['item'], task['amount'], 'Savings'))
+        elif task['intent'] == 'summary':
+            send_summary_template(sender_id)
+        elif task['intent'] == 'greet':
+            send_menu_buttons(sender_id)
+        else:
+            send_message(sender_id, task['reply'])
 
 def handle_postback(messaging_event):
     print('received postback', messaging_event)
     sender_id = messaging_event['sender']['id'] # sender facebook ID
-    payload = messaging_event.get('postback').get('payload')
-    send_message(sender_id, 'Received postback ' + payload)
+    handle_payload(sender_id, messaging_event.get('postback').get('payload'))
 
 def handle_quick_reply(messaging_event):
     print('handle quick reply')
     sender_id = messaging_event['sender']['id'] # sender facebook ID
-    payload = messaging_event['message']['quick_reply'].get('payload')
-    send_message(sender_id, 'Received payload ' + payload)
+    handle_payload(sender_id, messaging_event['message']['quick_reply'].get('payload'))
+
+def handle_payload(sender_id, payload):
+    if payload.startswith('PAYLOAD_CAT'):
+        handle_payload_cat(sender_id, payload)
+    elif payload.startswith('PAYLOAD_MENU'):
+        handle_payload_menu(sender_id, payload)
+    else:
+        send_message(sender_id, 'Received payload ' + payload)
+
+def handle_payload_cat(sender_id, payload):
+    category = PAYLOAD_CATEGORIES[payload]
+    transaction = DatabaseConnector().update_transaction(sender_id, category)
+    send_message(sender_id, get_transaction_added_msg(transaction[0], -transaction[1], transaction[2]))
+
+def handle_payload_menu(sender_id, payload):
+    message = ''
+    if payload == 'PAYLOAD_MENU_TRANSACTION':
+        message = 'What did you spent on and how much is it?'
+    elif payload == 'PAYLOAD_MENU_SAVINGS':
+        message = 'Tell me how much you saved. For example: I saved $20'
+    elif payload == 'PAYLOAD_MENU_GOALS':
+        message = 'What is your savings goal?'
+
+    send_message(sender_id, message)
+
+def get_transaction_added_msg(item, price, category):
+    return 'TRANSACTION ADDED\nItem: {}\nPrice: ${}\nCategory: {}'.format(item, price, category)
 
 def get_send_params():
     return {
-        'access_token': ''
+        'access_token': '%token%'
     }
 
 def get_send_headers():
@@ -186,6 +244,18 @@ def get_quick_reply(title, payload):
         'title': title,
         'payload': payload
     }
+
+def send_summary_template(sender_id):
+    generated_url = SummaryTask(sender_id).execute()
+    send_generic_message(sender_id, [
+        get_generic_element('Expenses Summary', 'Chart view and table view', '', [
+                get_url_button('Show me', generated_url)
+            ])
+        ])
+
+def send_menu_buttons(sender_id):
+    menu_buttons = [get_postback_button(PAYLOAD_MENUS[payload], payload) for payload in PAYLOAD_MENUS]
+    send_button_message(sender_id, 'Hi! What would you like to do?', menu_buttons)
 
 def send_message(recipient_id, message_text):
     data = json.dumps({
