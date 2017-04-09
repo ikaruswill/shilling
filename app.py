@@ -23,7 +23,7 @@ PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
                                     ('PAYLOAD_CAT_RENTAL', 'Rental'),
                                     ('PAYLOAD_CAT_OTHERS', 'Others')])
 
-PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Add transaction'),
+PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Record expenses'),
                             ('PAYLOAD_MENU_SAVINGS', 'Record income'),
                             ('PAYLOAD_MENU_GOALS', 'Set savings goal'),
                             ('PAYLOAD_MENU_SUMMARY', 'Show summary')])
@@ -146,7 +146,7 @@ def handle_message(messaging_event):
         elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
             DatabaseConnector().update_transaction(sender_id, 'Income')
-            messengerHelper.send_message(sender_id, get_transaction_added_msg(task['item'], task['amount'], 'Income'))
+            messengerHelper.send_message(sender_id, get_income_added_msg(task['item'], task['amount']))
         elif task['intent'] == 'summary':
             send_summary_template(sender_id)
         elif task['intent'] == 'greet':
@@ -191,7 +191,7 @@ def handle_payload(sender_id, payload):
 def handle_payload_cat(sender_id, payload):
     category = PAYLOAD_CATEGORIES[payload]
     transaction = DatabaseConnector().update_transaction(sender_id, category)
-    messengerHelper.send_message(sender_id, get_transaction_added_msg(transaction[0], -transaction[1], transaction[2]))
+    messengerHelper.send_message(sender_id, get_expense_added_msg(transaction[0], -transaction[1], transaction[2]))
 
 def handle_payload_menu(sender_id, payload):
     message = ''
@@ -207,8 +207,11 @@ def handle_payload_menu(sender_id, payload):
 
     messengerHelper.send_message(sender_id, message)
 
-def get_transaction_added_msg(item, price, category):
-    return 'TRANSACTION ADDED\nItem: {}\nPrice: ${}\nCategory: {}'.format(item, price, category)
+def get_expense_added_msg(item, price, category):
+    return 'EXPENSE RECORDED\nItem: {}\nPrice: ${}\nCategory: {}'.format(item, price, category)
+
+def get_income_added_msg(item, price):
+    return 'INCOME RECORDED\nItem: {}\nPrice: ${}'.format(item, price)
 
 
 if __name__ == '__main__':
