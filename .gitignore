@@ -1,3 +1,4 @@
 *.pem
-
 \.pem_path
+__pycache__
+*.log
