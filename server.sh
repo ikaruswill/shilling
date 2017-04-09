@@ -33,5 +33,5 @@ case $1 in
 		;;
 	tokens)
 		echo "Updating tokens..."
-		ssh -i $pem_path shilling@ikaruswill.com 'cp ~/update_token.sh ~/www/; cd ~/www; ./update_token.sh'
+		ssh -i $pem_path shilling@ikaruswill.com 'cd ~/www; ./update_token.sh'
 esac
