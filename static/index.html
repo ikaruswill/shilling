@@ -47,7 +47,7 @@
 		<div class="bar"></div></div><br>
 	<div class="chart" id="chart1">
 		<canvas class="chartVis" id="chart1Vis" width="300" height="300"></canvas>
-		<div class="mascotCont"><img class="mascot" src="mascot.png"></div></div>
+		<div class="mascotCont"><img class="mascot" src="{{ url_for('static', filename='mascot.png') }}"></div></div>
 	<div class="chart" id="chart2">
 		<canvas class="chartVis" id="chart2Vis" width="300" height="300"></canvas></div>
 	<div class="chart" id="chart3">
@@ -87,7 +87,7 @@
 		$.get(url, {}, function(result) {
 			data = result;
 			moveProgressBar();
-			$.getScript("chart1.js");
+			$.getScript("{{ url_for('static', filename='chart1.js') }}");
 			$('.chartButton').click(function() {
 				chart = this.id;
 				$('.chartButton').removeClass("activeButton");
@@ -109,9 +109,9 @@
 		function buttonClick() {
 			$('.chart').hide(); //hide all charts
 			$('#'+chart).show(); //only show selected chart
-			if (chart === "chart1") $.getScript("chart1.js");
-			if (chart === "chart2") $.getScript("chart2.js");
-			if (chart === "chart3") $.getScript("chart3.js");
+			if (chart === "chart1") $.getScript("{{ url_for('static', filename='chart1.js') }}");
+			if (chart === "chart2") $.getScript("{{ url_for('static', filename='chart2.js') }}");
+			if (chart === "chart3") $.getScript("{{ url_for('static', filename='chart3.js') }}");
 		}
 
 		function moveProgressBar() {
