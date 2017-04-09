@@ -108,4 +108,35 @@ class DatabaseConnector:
         cursor.execute(query, (user_id,))
         return cursor.fetchone()
 
-DatabaseConnector().get_summary
+    #end is a datetime
+    def add_savings_goal(self, fb_user_id, item, amount, end):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        user_id = self.get_user_id(fb_user_id)
+        if user_id is None:
+            return
+
+        if self.get_savings_goal(fb_user_id) is None:
+            query = "INSERT INTO goal\
+                        (item, amount, end, user_id)\
+                        VALUES (%s, %s, %s, %s)"
+        else:
+            query = "UPDATE goal\
+                        SET item = %s, amount = %s, end = %s\
+                        WHERE user_id = %s"
+
+        cursor.execute(query, (item, amount, end, user_id))
+        DatabaseConnector.instance.cnx.commit()
+
+    def get_savings_goal(self, fb_user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        user_id = self.get_user_id(fb_user_id)
+        if user_id is None:
+            return None
+
+        query = "SELECT item, amount, started, end\
+                    FROM goal\
+                    WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        return cursor.fetchone()
