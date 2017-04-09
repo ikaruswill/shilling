@@ -128,6 +128,24 @@ class DatabaseConnector:
         cursor.execute(query, (item, amount, end, user_id))
         DatabaseConnector.instance.cnx.commit()
 
+    #end is a datetime
+    def update_savings_goal_end(self, fb_user_id, end):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        savings_goal = self.get_savings_goal(fb_user_id)
+        if savings_goal is None:
+            return
+
+        query = "UPDATE goal\
+                    SET end = %s\
+                    WHERE id = %s"
+
+        cursor.execute(query, (end, savings_goal['id']))
+        DatabaseConnector.instance.cnx.commit()
+
+        savings_goal['end'] = end
+        return savings_goal
+
     def get_savings_goal(self, fb_user_id):
         cursor = DatabaseConnector.instance.cnx.cursor()
 
@@ -135,8 +153,15 @@ class DatabaseConnector:
         if user_id is None:
             return None
 
-        query = "SELECT item, amount, started, end\
+        query = "SELECT id, item, amount, started, end\
                     FROM goal\
                     WHERE user_id = %s"
         cursor.execute(query, (user_id,))
-        return cursor.fetchone()
+        id, item, amount, started, end = cursor.fetchone()
+        return {
+            'id': id,
+            'item': item,
+            'amount': float(amount),
+            'started': started,
+            'end': end
+        }
