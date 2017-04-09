@@ -23,4 +23,15 @@ case $1 in
 		echo "Restarting server..."
 		ssh -i $pem_path shilling@ikaruswill.com 'bash' < ./uwsgi_control/restart.sh
 		;;
+	ssh)
+		echo "Connecting to server..."
+		ssh -i $pem_path shilling@ikaruswill.com
+		;;
+	sync)
+		echo "Syncing to server..."
+		rsync -e "ssh -i $pem_path" -rithp --stats --exclude '*.git' --exclude '.*' --exclude '__*' ./ shilling@ikaruswill.com:~/www/
+		;;
+	tokens)
+		echo "Updating tokens..."
+		ssh -i $pem_path shilling@ikaruswill.com 'cp ~/update_token.sh ~/www/; cd ~/www; ./update_token.sh'
 esac
