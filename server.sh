@@ -30,7 +30,9 @@ case $1 in
 	sync)
 		echo "Syncing to server..."
 		rsync -e "ssh -i $pem_path" -rithp --stats --exclude '*.git' --exclude '.*' --exclude '__*' ./ shilling@ikaruswill.com:~/www/
+		echo "Restarting server..."
 		ssh -i $pem_path shilling@ikaruswill.com 'bash' < ./uwsgi_control/restart.sh # RESTART
+		echo "Updating tokens..."
 		ssh -i $pem_path shilling@ikaruswill.com 'cd ~/www; ./update_token.sh' # UPDATE TOKENS
 		;;
 	tokens)
