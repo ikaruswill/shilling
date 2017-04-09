@@ -26,9 +26,11 @@ def record_expense(request):
 		context.pop('missingAmount', None)
 		context['success'] = True
 	elif expense_item:
+		context.pop('success', None)
 		context.pop('missingExpenseItem', None)
 		context['missingAmount'] = True
 	elif expense_amount:
+		context.pop('success', None)
 		context.pop('missingAmount', None)
 		context['missingExpenseItem'] = True
 	else:
@@ -74,9 +76,11 @@ def set_savings_goal(request):
 		context.pop('missingAmount', None)
 		context['success'] = True
 	elif goal_item:
+		context.pop('success', None)
 		context.pop('missingGoalItem', None)
 		context['missingAmount'] = True
 	elif goal_amount:
+		context.pop('success', None)
 		context.pop('missingAmount', None)
 		context['missingGoalItem'] = True
 	else:
