@@ -39,4 +39,8 @@ case $1 in
 		echo "Updating tokens..."
 		ssh -i $pem_path shilling@ikaruswill.com 'cd ~/www; ./update_token.sh'
 		;;
+	log)
+		echo "Loading log..."
+		ssh -i $pem_path shilling@ikaruswill.com 'tail -f /tmp/shilling.log'
+		;;
 esac
