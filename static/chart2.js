@@ -17,7 +17,7 @@ data = _.sortBy(data, function(transaction){ return transaction.date; });
 
 //Get sum of transaction of each day
 _.each(data, function(transaction, index, transactions) {
-    if (transaction.date >= earliestTime) {
+    if (transaction.date >= earliestTime && transaction.amount < 0) {
         var index = _.findIndex(dates, function(date) { return date === transaction.date; });
         if (index > -1) {
             chartData[index] -= transaction.amount;
