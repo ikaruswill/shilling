@@ -39,7 +39,7 @@ class Parser:
                         return self.build_task(
                                 intent_value,
                                 '',
-                                'Savings', amount
+                                'Income', amount
                             )
                     elif intent_value == 'goal' and item is not None:
                         item_value = item[0]['value']
@@ -57,4 +57,4 @@ class Parser:
                         'transaction', '', item_value, amount
                     )
 
-        return self.build_task('reply', 'I don\'t think I understand ;)')
+        return self.build_task('reply', 'I don\'t think I understand ;). What would you like to do?')

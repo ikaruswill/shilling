@@ -23,9 +23,10 @@ PAYLOAD_CATEGORIES = OrderedDict([('PAYLOAD_CAT_FOOD', 'Food'),
                                     ('PAYLOAD_CAT_RENTAL', 'Rental'),
                                     ('PAYLOAD_CAT_OTHERS', 'Others')])
 
-PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Add a transaction'),
-                            ('PAYLOAD_MENU_SAVINGS', 'Record my savings'),
-                            ('PAYLOAD_MENU_GOALS', 'Set a savings goal')])
+PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Add transaction'),
+                            ('PAYLOAD_MENU_SAVINGS', 'Record income'),
+                            ('PAYLOAD_MENU_GOALS', 'Set savings goal'),
+                            ('PAYLOAD_MENU_SUMMARY', 'Show summary')])
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -144,13 +145,14 @@ def handle_message(messaging_event):
             messengerHelper.send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
         elif task['intent'] == 'savings':
             TransactionTask(sender_id, task['item'], task['amount']).execute()
-            messengerHelper.send_message(sender_id, get_transaction_added_msg(task['item'], task['amount'], 'Savings'))
+            DatabaseConnector().update_transaction(sender_id, 'Income')
+            messengerHelper.send_message(sender_id, get_transaction_added_msg(task['item'], task['amount'], 'Income'))
         elif task['intent'] == 'summary':
             send_summary_template(sender_id)
         elif task['intent'] == 'greet':
-            send_menu_buttons(sender_id)
+            send_quick_reply_menu(sender_id, 'Hi! What would you like to do?')
         else:
-            messengerHelper.send_message(sender_id, task['reply'])
+            send_quick_reply_menu(sender_id, task['reply'])
 
 def send_summary_template(sender_id):
     generated_url = SummaryTask(sender_id).execute()
@@ -161,8 +163,12 @@ def send_summary_template(sender_id):
         ])
 
 def send_menu_buttons(sender_id):
-    menu_buttons = [messengerHelper.get_postback_button(PAYLOAD_MENUS[payload], payload) for payload in PAYLOAD_MENUS]
+    menu_buttons = [messengerHelper.get_postback_button(PAYLOAD_MENUS[payload], payload) for payload in PAYLOAD_MENUS][0:3]
     messengerHelper.send_button_message(sender_id, 'Hi! What would you like to do?', menu_buttons)
+
+def send_quick_reply_menu(sender_id, message):
+    quick_replies = [messengerHelper.get_quick_reply(PAYLOAD_MENUS[p], p) for p in PAYLOAD_MENUS]
+    messengerHelper.send_quick_reply(sender_id, message, quick_replies)
 
 def handle_postback(messaging_event):
     print('received postback', messaging_event)
@@ -192,9 +198,12 @@ def handle_payload_menu(sender_id, payload):
     if payload == 'PAYLOAD_MENU_TRANSACTION':
         message = 'What did you spent on and how much is it?'
     elif payload == 'PAYLOAD_MENU_SAVINGS':
-        message = 'Tell me how much you saved. For example: I saved $20'
+        message = 'Tell me how much is your income. For example: I got $20'
     elif payload == 'PAYLOAD_MENU_GOALS':
         message = 'What is your savings goal?'
+    elif payload == 'PAYLOAD_MENU_SUMMARY':
+        send_summary_template(sender_id)
+        return
 
     messengerHelper.send_message(sender_id, message)
 
