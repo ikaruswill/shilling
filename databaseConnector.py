@@ -157,11 +157,16 @@ class DatabaseConnector:
                     FROM goal\
                     WHERE user_id = %s"
         cursor.execute(query, (user_id,))
-        id, item, amount, started, end = cursor.fetchone()
+
+        savings_goal = cursor.fetchone()
+
+        if savings_goal is None:
+            return None
+
         return {
-            'id': id,
-            'item': item,
-            'amount': float(amount),
-            'started': started,
-            'end': end
+            'id': savings_goal[0],
+            'item': savings_goal[1],
+            'amount': float(savings_goal[2]),
+            'started': savings_goal[3],
+            'end': savings_goal[4]
         }
