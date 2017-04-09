@@ -19,7 +19,9 @@ data = _.sortBy(data, function(transaction){ return transaction.date; });
 _.each(data, function(transaction, index, transactions) {
     if (transaction.date >= earliestTime && transaction.amount < 0) {
         var index = _.findIndex(dates, function(date) { 
-            return date + 86400000 > transaction.date && transaction.date >= date; 
+            currentDate = new Date(date).toISOString().substring(0, 10);
+            transDate = new Date(transaction.date).toISOString().substring(0, 10);
+            return currentDate === transDate; 
         });
         if (index > -1) {
             chartData[index] -= transaction.amount;
@@ -31,14 +33,8 @@ _.each(data, function(transaction, index, transactions) {
 });
 
 //Push data for chart's x-axis labels
-labels.push('Day 0');
-for (var day = 1; day < dates.length; day++) {
-    hoursDiff = dates[day] - dates[day-1];
-    numDays = hoursDiff / 86400000;
-    startDay = Math.floor((dates[day] - earliestTime)/86400000);
-    for (var i = startDay; i < startDay + numDays; i++) {
-        labels.push('Day ' + i);
-    }
+for (var day = 0; day < dates.length; day++) {
+    labels.push(new Date(dates[day]).toISOString().substring(0, 10));
 }
 
 var ctx = document.getElementById("chart2Vis").getContext("2d");
