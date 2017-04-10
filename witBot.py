@@ -72,11 +72,6 @@ def record_income(request):
 	# Entity keys
 	amount_key = 'amount_of_money'
 
-	# Get keys if exists, else set to entity value
-	amount = context.get(amount_key, None)
-	if not amount:
-		amount = first_entity_value(entities, amount_key)
-
 	if amount:
 		# Send data to DB
 		context.pop(no_amount_key, None)
