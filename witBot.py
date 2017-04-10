@@ -45,7 +45,7 @@ def record_expense(request):
 		context.pop(no_amount_key)
 		context.pop(success_key)
 	else:
-		"# Both is missing!?"
+		# Both is missing!?
 		pass
 
 	from pprint import pprint
@@ -92,30 +92,41 @@ def set_savings_goal(request):
 	context = request['context']
 	entities = request['entities']
 
-	goal_item = first_entity_value(entities, 'expense_item')
-	goal_amount = first_entity_value(entities, 'amount_of_money')
+	# Status keys
+	no_item_key = 'missingGoalItem'
+	no_amount_key = 'missingGoalAmount'
+	success_key = 'setSavingsGoalSuccess'
 
-	if goal_item and goal_amount:
+	# Entity keys
+	item_key = 'goal_item'
+	amount_key = 'expense_item'
+
+	# Get keys if exists, else set to entity value
+	item = context.setdefault(item_key, first_entity_value(entities, item_key))
+	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+		
+	if item and amount:
 		# Send data to DB
-		context.pop('missingGoalItem', None)
-		context.pop('missingGoalAmount', None)
-		context['setSavingsGoalSuccess'] = True
-	elif goal_item:
-		context.pop('setSavingsGoalSuccess', None)
-		context.pop('missingGoalItem', None)
-		context['missingGoalAmount'] = True
-	elif goal_amount:
-		context.pop('setSavingsGoalSuccess', None)
-		context.pop('missingGoalAmount', None)
-		context['missingGoalItem'] = True
+		context.pop(no_item_key)
+		context.pop(no_amount_key)
+		context.set(success_key, True)
+	elif not amount:
+		context.pop(no_item_key)
+		context.set(no_amount_key, True)
+		context.pop(success_key)
+	elif not item:
+		context.set(no_item_key, True)
+		context.pop(no_amount_key)
+		context.pop(success_key)
 	else:
 		# Both is missing!?
 		pass
 
+
 	from pprint import pprint
 	pprint(request)
 	
-	print('set_savings_goal(', goal_item, goal_amount, ')')
+	print('set_savings_goal(', item, amount, ')')
 
 	return context
 	pass
