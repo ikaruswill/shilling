@@ -8,6 +8,7 @@ def first_entity_value(entities, entity):
 	val = entities[entity][0]['value']
 	if not val:
 		return None
+	# val can be a dict or a primitive
 	return val['value'] if isinstance(val, dict) else val
 
 def send(request, response):
@@ -17,24 +18,32 @@ def record_expense(request):
 	context = request['context']
 	entities = request['entities']
 
-	expense_item = first_entity_value(entities, 'expense_item')
-	expense_amount = first_entity_value(entities, 'amount_of_money')
+	no_item_key = 'missingExpenseItem'
+	no_amount_key = 'missingExpenseAmount'
+	success_key = 'recordExpenseSuccess'
 
+	item_key = 'expense_item'
+	amount_key = 'amount_of_money'
+
+	# Get keys if exists, else set to entity value
+	expense_item = context.setdefault(item_key, first_entity_value(entities, item_key))
+	expense_amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+		
 	if expense_item and expense_amount:
 		# Send data to DB
-		context.pop('missingExpenseItem', None)
-		context.pop('missingExpenseAmount', None)
-		context['recordExpenseSuccess'] = True
-	elif expense_item:
-		context.pop('recordExpenseSuccess', None)
-		context.pop('missingExpenseItem', None)
-		context['missingExpenseAmount'] = True
-	elif expense_amount:
-		context.pop('recordExpenseSuccess', None)
-		context.pop('missingExpenseAmount', None)
-		context['missingExpenseItem'] = True
+		context.pop(no_item_key)
+		context.pop(no_amount_key)
+		context.set(success_key, True)
+	elif not expense_amount:
+		context.pop(no_item_key)
+		context.set(no_amount_key, True)
+		context.pop(success_key)
+	elif not expense_item:
+		context.set(no_item_key, True)
+		context.pop(no_amount_key)
+		context.pop(success_key)
 	else:
-		# Both is missing!?
+		"# Both is missing!?"
 		pass
 
 	from pprint import pprint
