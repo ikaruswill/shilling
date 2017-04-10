@@ -103,7 +103,7 @@ def set_savings_goal(request):
 	success_key = 'setSavingsGoalSuccess'
 
 	# Entity keys
-	item_key = 'goal_item'
+	item_key = 'expense_item'
 	amount_key = 'amount_of_money'
 
 	# Get keys from context if exists, else set to entity value
