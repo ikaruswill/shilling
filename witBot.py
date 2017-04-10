@@ -60,10 +60,10 @@ def record_income(request):
 	income_amount = first_entity_value(entities, 'amount_of_money')
 	if income_amount:
 		# Send data to DB
-		context.pop('missingAmount', None)
+		context.pop('missingIncomeAmount', None)
 		context['recordIncomeSuccess'] = True
 	else:
-		context['missingAmount'] = True
+		context['missingIncomeAmount'] = True
 
 	from pprint import pprint
 	pprint(request)
