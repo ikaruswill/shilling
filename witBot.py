@@ -18,7 +18,7 @@ def record_expense(request):
 	context = request['context']
 	entities = request['entities']
 
-	# Status keys
+	# State keys
 	no_item_key = 'missingExpenseItem'
 	no_amount_key = 'missingExpenseAmount'
 	success_key = 'recordExpenseSuccess'
@@ -27,9 +27,13 @@ def record_expense(request):
 	item_key = 'expense_item'
 	amount_key = 'amount_of_money'
 
-	# Get keys if exists, else set to entity value
-	item = context.setdefault(item_key, first_entity_value(entities, item_key))
-	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+	# Get keys from context if exists, else set to entity value
+	item = context.get(item_key, None)
+	amount = context.get(amount_key, None)
+	if not item:
+		item = first_entity_value(entities, item_key)
+	if not amount:
+		amount = first_entity_value(entities, amount_key)
 		
 	if item and amount:
 		# Send data to DB
@@ -59,7 +63,7 @@ def record_income(request):
 	context = request['context']
 	entities = request['entities']
 
-	# Status keys
+	# State keys
 	no_amount_key = 'missingIncomeAmount'
 	success_key = 'recordIncomeSuccess'
 
@@ -67,7 +71,9 @@ def record_income(request):
 	amount_key = 'amount_of_money'
 
 	# Get keys if exists, else set to entity value
-	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+	amount = context.get(amount_key, None)
+	if not amount:
+		amount = first_entity_value(entities, amount_key)
 
 	if amount:
 		# Send data to DB
@@ -101,9 +107,13 @@ def set_savings_goal(request):
 	item_key = 'goal_item'
 	amount_key = 'expense_item'
 
-	# Get keys if exists, else set to entity value
-	item = context.setdefault(item_key, first_entity_value(entities, item_key))
-	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+	# Get keys from context if exists, else set to entity value
+	item = context.get(item_key, None)
+	amount = context.get(amount_key, None)
+	if not item:
+		item = first_entity_value(entities, item_key)
+	if not amount:
+		amount = first_entity_value(entities, amount_key)
 		
 	if item and amount:
 		# Send data to DB
