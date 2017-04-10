@@ -91,7 +91,7 @@ def record_income(request):
 
 def show_summary(request):
 	# Send user the summary link, using session_id key in request
-	pass
+	return request
 
 def set_savings_goal(request):
 	context = request['context']
