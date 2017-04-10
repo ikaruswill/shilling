@@ -41,10 +41,12 @@ def record_expense(request):
 		context.pop(no_amount_key, None)
 		context[success_key] = True
 	elif not amount:
+		context[amount_key] = amount
 		context.pop(no_item_key, None)
 		context[no_amount_key] = True
 		context.pop(success_key, None)
 	elif not item:
+		context[item_key] = item
 		context[no_item_key] = True
 		context.pop(no_amount_key, None)
 		context.pop(success_key, None)
@@ -121,10 +123,12 @@ def set_savings_goal(request):
 		context.pop(no_amount_key, None)
 		context[success_key] = True
 	elif not amount:
+		context[amount_key] = amount
 		context.pop(no_item_key, None)
 		context[no_amount_key] = True
 		context.pop(success_key, None)
 	elif not item:
+		context[item_key] = item
 		context[no_item_key] = True
 		context.pop(no_amount_key, None)
 		context.pop(success_key, None)
