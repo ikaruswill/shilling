@@ -35,13 +35,13 @@ def record_expense(request):
 		# Send data to DB
 		context.pop(no_item_key)
 		context.pop(no_amount_key)
-		context.set(success_key, True)
+		context[success_key] = True
 	elif not amount:
 		context.pop(no_item_key)
-		context.set(no_amount_key, True)
+		context[no_amount_key] = True
 		context.pop(success_key)
 	elif not item:
-		context.set(no_item_key, True)
+		context[no_item_key] = True
 		context.pop(no_amount_key)
 		context.pop(success_key)
 	else:
@@ -72,9 +72,9 @@ def record_income(request):
 	if amount:
 		# Send data to DB
 		context.pop(no_amount_key)
-		context.set(success_key, True)
+		context[success_key] = True
 	else:
-		context.set(no_amount_key, True)
+		context[no_amount_key] = True
 		context.pop(success_key)
 
 	from pprint import pprint
@@ -109,13 +109,13 @@ def set_savings_goal(request):
 		# Send data to DB
 		context.pop(no_item_key)
 		context.pop(no_amount_key)
-		context.set(success_key, True)
+		context[success_key] = True
 	elif not amount:
 		context.pop(no_item_key)
-		context.set(no_amount_key, True)
+		context[no_amount_key] = True
 		context.pop(success_key)
 	elif not item:
-		context.set(no_item_key, True)
+		context[no_item_key] = True
 		context.pop(no_amount_key)
 		context.pop(success_key)
 	else:
