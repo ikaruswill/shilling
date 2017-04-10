@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, make_response, request, render_template
 from flask_cors import CORS, cross_origin
 from databaseConnector import DatabaseConnector
+from datetime import datetime
 from transactionTask import TransactionTask
 from summaryTask import SummaryTask
 from parser import Parser
 from collections import OrderedDict
+from dateutil.relativedelta import *
 import os
 import logging
 import requests
@@ -27,6 +29,12 @@ PAYLOAD_MENUS = OrderedDict([('PAYLOAD_MENU_TRANSACTION', 'Record expenses'),
                             ('PAYLOAD_MENU_SAVINGS', 'Record income'),
                             ('PAYLOAD_MENU_GOALS', 'Set savings goal'),
                             ('PAYLOAD_MENU_SUMMARY', 'Show summary')])
+
+PAYLOAD_GOAL_DURATION = OrderedDict([('PAYLOAD_GOAL_ONE_MONTH', 'One month'),
+                                    ('PAYLOAD_GOAL_THREE_MONTHS', 'Three months'),
+                                    ('PAYLOAD_GOAL_SIX_MONTHS', 'Six months'),
+                                    ('PAYLOAD_GOAL_NINE_MONTHS', 'Nine months'),
+                                    ('PAYLOAD_GOAL_ONE_YEAR', 'One Year')])
 
 @app.route('/', methods=['GET'])
 def verify():
@@ -151,6 +159,10 @@ def handle_message(messaging_event):
             send_summary_template(sender_id)
         elif task['intent'] == 'greet':
             send_quick_reply_menu(sender_id, 'Hi! What would you like to do?')
+        elif task['intent'] == 'goal':
+            DatabaseConnector().add_savings_goal(sender_id, task['item'], task['amount'], datetime.now() + relativedelta(months=1))
+            quick_replies = [messengerHelper.get_quick_reply(PAYLOAD_GOAL_DURATION[p], p) for p in PAYLOAD_GOAL_DURATION]
+            messengerHelper.send_quick_reply(sender_id, 'How long do you wish to reach the goal?', quick_replies)
         else:
             send_quick_reply_menu(sender_id, task['reply'])
 
@@ -185,6 +197,8 @@ def handle_payload(sender_id, payload):
         handle_payload_cat(sender_id, payload)
     elif payload.startswith('PAYLOAD_MENU'):
         handle_payload_menu(sender_id, payload)
+    elif payload.startswith('PAYLOAD_GOAL'):
+        handle_payload_goal(sender_id, payload)
     else:
         messengerHelper.send_message(sender_id, 'Received payload ' + payload)
 
@@ -206,6 +220,26 @@ def handle_payload_menu(sender_id, payload):
         return
 
     messengerHelper.send_message(sender_id, message)
+
+def handle_payload_goal(sender_id, payload):
+    goal_start = DatabaseConnector().get_savings_goal(sender_id)['started']
+    new_end = datetime.now()
+    if payload == 'PAYLOAD_GOAL_ONE_MONTH':
+        new_end = goal_start + relativedelta(months=+1)
+    elif payload == 'PAYLOAD_GOAL_THREE_MONTHS':
+        new_end = goal_start + relativedelta(months=+3)
+    elif payload == 'PAYLOAD_GOAL_SIX_MONTHS':
+        new_end = goal_start + relativedelta(months=+6)
+    elif payload == 'PAYLOAD_GOAL_NINE_MONTHS':
+        new_end = goal_start + relativedelta(months=+9)
+    elif payload == 'PAYLOAD_GOAL_ONE_YEAR':
+        new_end = goal_start + relativedelta(years=+1)
+
+    savings_goal = DatabaseConnector().update_savings_goal_end(sender_id, new_end)
+    messengerHelper.send_message(sender_id, get_goal_set_msg(savings_goal['item'], savings_goal['amount'], savings_goal['end'].date()))
+
+def get_goal_set_msg(item, amount, end):
+    return 'SAVINGS GOAL SET\nItem: {}\nPrice: ${}\nAchieve By: {}'.format(item, amount, end)
 
 def get_expense_added_msg(item, price, category):
     return 'EXPENSE RECORDED\nItem: {}\nPrice: ${}\nCategory: {}'.format(item, price, category)

@@ -9,7 +9,7 @@ var colors = ["#1abc9c", "#f1c40f", "#3498db", "#e74c3c", "#34495e", "#95a5a6",
 _.each(categoryList, function(category, index, categories) {
     var total = 0;
     _.each(data, function(transaction, index, transactions) {
-        if (transaction.category_id === category && transaction.date >= earliestTime) {
+        if (transaction.category_id === category && transaction.date >= earliestTime && transaction.amount < 0) {
             total -= transaction.amount;
         }
     });
