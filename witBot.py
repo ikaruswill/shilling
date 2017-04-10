@@ -18,27 +18,29 @@ def record_expense(request):
 	context = request['context']
 	entities = request['entities']
 
+	# Status keys
 	no_item_key = 'missingExpenseItem'
 	no_amount_key = 'missingExpenseAmount'
 	success_key = 'recordExpenseSuccess'
 
+	# Entity keys
 	item_key = 'expense_item'
 	amount_key = 'amount_of_money'
 
 	# Get keys if exists, else set to entity value
-	expense_item = context.setdefault(item_key, first_entity_value(entities, item_key))
-	expense_amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+	item = context.setdefault(item_key, first_entity_value(entities, item_key))
+	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
 		
-	if expense_item and expense_amount:
+	if item and amount:
 		# Send data to DB
 		context.pop(no_item_key)
 		context.pop(no_amount_key)
 		context.set(success_key, True)
-	elif not expense_amount:
+	elif not amount:
 		context.pop(no_item_key)
 		context.set(no_amount_key, True)
 		context.pop(success_key)
-	elif not expense_item:
+	elif not item:
 		context.set(no_item_key, True)
 		context.pop(no_amount_key)
 		context.pop(success_key)
@@ -49,7 +51,7 @@ def record_expense(request):
 	from pprint import pprint
 	pprint(request)
 
-	print('record_expense(', expense_item, expense_amount, ')')
+	print('record_expense(', item, amount, ')')
 	
 	return context
 
@@ -57,18 +59,28 @@ def record_income(request):
 	context = request['context']
 	entities = request['entities']
 
-	income_amount = first_entity_value(entities, 'amount_of_money')
-	if income_amount:
+	# Status keys
+	no_amount_key = 'missingIncomeAmount'
+	success_key = 'recordIncomeSuccess'
+
+	# Entity keys
+	amount_key = 'amount_of_money'
+
+	# Get keys if exists, else set to entity value
+	amount = context.setdefault(amount_key, first_entity_value(entities, amount_key))
+
+	if amount:
 		# Send data to DB
-		context.pop('missingIncomeAmount', None)
-		context['recordIncomeSuccess'] = True
+		context.pop(no_amount_key)
+		context.set(success_key, True)
 	else:
-		context['missingIncomeAmount'] = True
+		context.set(no_amount_key, True)
+		context.pop(success_key)
 
 	from pprint import pprint
 	pprint(request)
 
-	print('record_income(', income_amount, ')')
+	print('record_income(', amount, ')')
 	
 	return context
 
