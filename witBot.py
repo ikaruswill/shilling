@@ -1,10 +1,10 @@
 from wit import Wit
+import json
+import uuid
+from databaseConnector import DatabaseConnector
 
-access_token = '%token%'
-
-def run_actions(session_id, message):
-	resp = client.run_actions(session_id, message, {})
-	return str(resp)
+# access_token = '%token%'
+access_token = 'FV6Z3EDSA7CHU7BGSXQRB23UVSYBQJSN'
 
 def first_entity_value(entities, entity):
 	if entity not in entities:
@@ -45,6 +45,7 @@ def record_expense(request):
 		context.pop(no_item_key, None)
 		context.pop(no_amount_key, None)
 		context[success_key] = True
+		context['end'] = True
 	elif not amount:
 		context[item_key] = item
 		context.pop(no_item_key, None)
@@ -83,6 +84,7 @@ def record_income(request):
 		# Send data to DB
 		context.pop(no_amount_key, None)
 		context[success_key] = True
+		context['end'] = True
 	else:
 		context[no_amount_key] = True
 		context.pop(success_key, None)
@@ -96,6 +98,7 @@ def record_income(request):
 
 def show_summary(request):
 	# Send user the summary link, using session_id key in request
+	request['context']['end'] = True
 	return request
 
 def set_savings_goal(request):
@@ -124,6 +127,7 @@ def set_savings_goal(request):
 		context.pop(no_item_key, None)
 		context.pop(no_amount_key, None)
 		context[success_key] = True
+		context['end'] = True
 	elif not amount:
 		context[item_key] = item
 		context.pop(no_item_key, None)
@@ -155,7 +159,14 @@ actions = {
 	'setSavingsGoal': set_savings_goal
 }
 client = Wit(access_token=access_token, actions=actions)
-while True:
-	resp = run_actions('1', input("Say something: "))
 
-	print('response', resp)
+fb_user_id = '1475963009142095'
+while True:
+	session = DatabaseConnector().get_session(fb_user_id=)
+	print('session', session)
+	context = client.run_actions(session['uuid'], input("Say something: "), json.loads(session['context']))
+	print('new context', context)
+	if context.get('end') == True:
+		DatabaseConnector().update_session_id(uuid.uuid1(), fb_user_id=fb_user_id)
+	else:
+		DatabaseConnector().update_session_context(session['uuid'], json.dumps(context))

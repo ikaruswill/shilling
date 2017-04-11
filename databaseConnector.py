@@ -172,7 +172,7 @@ class DatabaseConnector:
             'end': savings_goal[4]
         }
 
-    def get_session_id(self, fb_user_id):
+    def get_session(self, fb_user_id):
         cursor = DatabaseConnector.instance.cnx.cursor()
 
         user_id = self.get_user_id(fb_user_id)
@@ -189,12 +189,11 @@ class DatabaseConnector:
 
         # session expired 20 minutes after last modified
         if session is None or (current_time - session[2]).total_seconds() > 20 * 60:
-            print('total sec', (current_time - session[2]).total_seconds())
             new_uuid = uuid.uuid1()
-            self.add_session(user_id, new_uuid) if session is None else self.update_session(user_id, new_uuid)
+            self.add_session(user_id, new_uuid) if session is None else self.update_session_id(new_uuid, user_id=user_id)
             return {
                 'uuid': new_uuid,
-                'context': {}
+                'context': '{}'
             }
         else:
             return {
@@ -202,12 +201,28 @@ class DatabaseConnector:
                 'context': session[1]
             }
 
-    def update_session(self, user_id, uuid, context='{}'):
+    def update_session_id(self, uuid, user_id='', fb_user_id=''):
+        if user_id == '' and fb_user_id == '':
+            return
+
+        if user_id == '':
+            user_id = self.get_user_id(fb_user_id)
+            if user_id is None:
+                return
+
         cursor = DatabaseConnector.instance.cnx.cursor()
         query = "UPDATE session\
-                    SET uuid = %s, context = %s\
+                    SET uuid = %s, context = '{}'\
                     WHERE user_id = %s"
-        cursor.execute(query, (str(uuid), context, user_id))
+        cursor.execute(query, (str(uuid), user_id))
+        DatabaseConnector.instance.cnx.commit()
+
+    def update_session_context(self, uuid, context):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+        query = "UPDATE session\
+                    SET context = %s\
+                    WHERE uuid = %s"
+        cursor.execute(query, (context, str(uuid)))
         DatabaseConnector.instance.cnx.commit()
 
     def add_session(self, user_id, uuid, context='{}'):
