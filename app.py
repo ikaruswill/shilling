@@ -106,6 +106,7 @@ def get_chart_html():
         return 'Missing userId parameter', 403
     savings_goal = DatabaseConnector().get_savings_goal(user_id = user_id)
     savings_goal['savings'] = DatabaseConnector().get_total_savings(user_id)
+    return savings_goal
 
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID
