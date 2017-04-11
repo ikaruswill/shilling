@@ -192,7 +192,7 @@ class DatabaseConnector:
             new_uuid = uuid.uuid1()
             self.add_session(user_id, new_uuid) if session is None else self.update_session_id(new_uuid, user_id=user_id)
             return {
-                'uuid': new_uuid,
+                'uuid': str(new_uuid),
                 'context': '{}'
             }
         else:

@@ -98,7 +98,7 @@ def record_income(request):
 
 def show_summary(request):
 	# Send user the summary link, using session_id key in request
-	request['context']['end'] = True
+	request['end'] = True
 	return request
 
 def set_savings_goal(request):
@@ -162,7 +162,7 @@ client = Wit(access_token=access_token, actions=actions)
 
 fb_user_id = '1475963009142095'
 while True:
-	session = DatabaseConnector().get_session(fb_user_id=)
+	session = DatabaseConnector().get_session(fb_user_id)
 	print('session', session)
 	context = client.run_actions(session['uuid'], input("Say something: "), json.loads(session['context']))
 	print('new context', context)
