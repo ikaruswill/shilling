@@ -98,15 +98,19 @@ def get_summary():
 @app.route('/savingsGoal', methods=['GET'])
 def get_savings_goal():
     user_id = request.args.get('userId')
+    if not user_id:
+        return 'Missing userId parameter', 403
+    savings_goal = DatabaseConnector().get_savings_goal(user_id = user_id)
+
+    if savings_goal == None:
+        return jsonify({'error': 'No savings goal found'})
+
+    savings_goal['savings'] = DatabaseConnector().get_total_savings(user_id)
+    return jsonify(savings_goal)
 
 @app.route('/chart', methods=['GET'])
 def get_chart_html():
     return render_template('index.html')
-    if not user_id:
-        return 'Missing userId parameter', 403
-    savings_goal = DatabaseConnector().get_savings_goal(user_id = user_id)
-    savings_goal['savings'] = DatabaseConnector().get_total_savings(user_id)
-    return savings_goal
 
 def handle_message(messaging_event):
     sender_id = messaging_event['sender']['id'] # sender facebook ID

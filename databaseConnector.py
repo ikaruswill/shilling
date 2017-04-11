@@ -152,9 +152,10 @@ class DatabaseConnector:
 
         cursor = DatabaseConnector.instance.cnx.cursor()
 
-        user_id = self.get_user_id(fb_user_id)
-        if user_id is None:
-            return None
+        if user_id == '':
+            user_id = self.get_user_id(fb_user_id)
+            if user_id is None:
+                return None
 
         query = "SELECT id, item, amount, started, end\
                     FROM goal\
@@ -184,5 +185,3 @@ class DatabaseConnector:
 
         savings = cursor.fetchone()[0]
         return float(savings) if savings is not None else 0
-
-print(DatabaseConnector().get_total_savings('12'))
