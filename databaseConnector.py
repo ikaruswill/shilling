@@ -116,7 +116,7 @@ class DatabaseConnector:
         if user_id is None:
             return
 
-        if self.get_savings_goal(fb_user_id) is None:
+        if self.get_savings_goal(fb_user_id = fb_user_id) is None:
             query = "INSERT INTO goal\
                         (item, amount, end, user_id)\
                         VALUES (%s, %s, %s, %s)"
@@ -132,7 +132,7 @@ class DatabaseConnector:
     def update_savings_goal_end(self, fb_user_id, end):
         cursor = DatabaseConnector.instance.cnx.cursor()
 
-        savings_goal = self.get_savings_goal(fb_user_id)
+        savings_goal = self.get_savings_goal(fb_user_id = fb_user_id)
         if savings_goal is None:
             return
 
@@ -146,7 +146,10 @@ class DatabaseConnector:
         savings_goal['end'] = end
         return savings_goal
 
-    def get_savings_goal(self, fb_user_id):
+    def get_savings_goal(self, fb_user_id = '', user_id = ''):
+        if fb_user_id == '' and user_id == '':
+            return None
+
         cursor = DatabaseConnector.instance.cnx.cursor()
 
         user_id = self.get_user_id(fb_user_id)
@@ -170,3 +173,16 @@ class DatabaseConnector:
             'started': savings_goal[3],
             'end': savings_goal[4]
         }
+
+    def get_total_savings(self, user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        query = "SELECT SUM(amount) AS savings\
+                    FROM transaction\
+                    WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+
+        savings = cursor.fetchone()[0]
+        return float(savings) if savings is not None else 0
+
+print(DatabaseConnector().get_total_savings('12'))
