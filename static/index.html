@@ -80,8 +80,8 @@
 
 		var server = "https://shilling.ikaruswill.com/";
 		var userId = getURLParameter('userId') === null ? 1 : getURLParameter('userId');
-		var start = getURLParameter('start') === null ? 1488326400000 : getURLParameter('start');
-		var end = getURLParameter('end') === null ? 1489104000000 : getURLParameter('end');
+		var end = (new Date()).getTime();
+		var start = end - 24 * 60 * 60 * 1000;
 		var url = server + 'summary?userId=' + userId + '&start=' + start + '&end=' + end;
 		var data = undefined;
 
