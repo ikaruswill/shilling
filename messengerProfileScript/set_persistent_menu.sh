@@ -1,40 +1,26 @@
 curl -X POST -H "Content-Type: application/json" -d '{
-  "persistent_menu":[
+  "setting_type" : "call_to_actions",
+  "thread_state" : "existing_thread",
+  "call_to_actions":[
     {
-      "locale":"default",
-      "composer_input_disabled":true,
-      "call_to_actions":[
-        {
-          "title":"Add a transaction",
-          "type":"nested",
-          "call_to_actions":[
-            {
-              "title":"Breakfast",
-              "type":"postback",
-              "payload":"BREAKFAST_PAYLOAD"
-            },
-            {
-              "title":"Groceries",
-              "type":"postback",
-              "payload":"GROCERIES_PAYLOAD"
-            },
-            {
-              "title":"Transport",
-              "type":"postback",
-              "payload":"TRANSPORT_PAYLOAD"
-            }
-          ]
-        },
-        {
-          "type":"postback",
-          "title":"Set a savings goal",
-          "payload": "SAVINGS_PAYLOAD"
-        }
-      ]
+      "title":"Record expenses",
+      "type":"postback",
+      "payload": "PAYLOAD_MENU_TRANSACTION"
     },
     {
-      "locale":"en_US",
-      "composer_input_disabled":false
+      "title":"Record income",
+      "type":"postback",
+      "payload": "PAYLOAD_MENU_SAVINGS"
+    },
+    {
+      "title":"Show summary",
+      "type":"postback",
+      "payload": "PAYLOAD_MENU_SUMMARY"
+    },
+    {
+      "title":"Set savings goal",
+      "type":"postback",
+      "payload": "PAYLOAD_MENU_GOALS"
     }
   ]
-}' "https://graph.facebook.com/v2.6/me/messenger_profile?access_token=$1"
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=$1"

@@ -151,12 +151,15 @@ def call_send_api(data):
     r = requests.post('https://graph.facebook.com/v2.6/me/messages', params=params, headers=headers, data=data)
     after_request(r)
 
-def add_user_if_new(messaging_event):
-    sender_id = messaging_event['sender']['id'] # sender facebook ID
+def get_user_profile(fb_user_id):
     params = get_send_params()
     headers = get_send_headers()
-    r = requests.get('https://graph.facebook.com/v2.6/' + sender_id + '?fields=first_name,last_name', params=params, headers=headers)
+    r = requests.get('https://graph.facebook.com/v2.6/' + fb_user_id + '?fields=first_name,last_name', params=params, headers=headers)
     after_request(r)
-    user_profile = json.loads(r.text)
+    return json.loads(r.text)
+
+def add_user_if_new(messaging_event):
+    sender_id = messaging_event['sender']['id'] # sender facebook ID
+    user_profile = get_user_profile(sender_id)
     if user_profile.get('first_name') and user_profile.get('last_name'):
         DatabaseConnector().add_user(user_profile['first_name'], user_profile['last_name'], sender_id)

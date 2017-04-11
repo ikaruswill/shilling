@@ -193,7 +193,10 @@ def handle_quick_reply(messaging_event):
     handle_payload(sender_id, messaging_event['message']['quick_reply'].get('payload'))
 
 def handle_payload(sender_id, payload):
-    if payload.startswith('PAYLOAD_CAT'):
+    if payload == 'PAYLOAD_GET_STARTED':
+        user_profile = messengerHelper.get_user_profile(sender_id)
+        send_quick_reply_menu(sender_id, 'Hi {}, I\'m Shilling, your personal financial assistant. How may I help you today?'.format(user_profile.get('first_name')))
+    elif payload.startswith('PAYLOAD_CAT'):
         handle_payload_cat(sender_id, payload)
     elif payload.startswith('PAYLOAD_MENU'):
         handle_payload_menu(sender_id, payload)
