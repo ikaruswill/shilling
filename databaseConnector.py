@@ -2,6 +2,7 @@ import mysql.connector
 import json
 from datetime import datetime
 from pprint import pprint
+import uuid
 
 class DatabaseConnector:
     class __DatabaseConnector:
@@ -170,3 +171,49 @@ class DatabaseConnector:
             'started': savings_goal[3],
             'end': savings_goal[4]
         }
+
+    def get_session_id(self, fb_user_id):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+
+        user_id = self.get_user_id(fb_user_id)
+        if user_id is None:
+            return None
+
+        query = "SELECT uuid, context, modified\
+                    FROM session\
+                    WHERE user_id = %s"
+        cursor.execute(query, (user_id, ))
+        session = cursor.fetchone()
+
+        current_time = datetime.utcnow()
+
+        # session expired 20 minutes after last modified
+        if session is None or (current_time - session[2]).total_seconds() > 20 * 60:
+            print('total sec', (current_time - session[2]).total_seconds())
+            new_uuid = uuid.uuid1()
+            self.add_session(user_id, new_uuid) if session is None else self.update_session(user_id, new_uuid)
+            return {
+                'uuid': new_uuid,
+                'context': {}
+            }
+        else:
+            return {
+                'uuid': session[0],
+                'context': session[1]
+            }
+
+    def update_session(self, user_id, uuid, context='{}'):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+        query = "UPDATE session\
+                    SET uuid = %s, context = %s\
+                    WHERE user_id = %s"
+        cursor.execute(query, (str(uuid), context, user_id))
+        DatabaseConnector.instance.cnx.commit()
+
+    def add_session(self, user_id, uuid, context='{}'):
+        cursor = DatabaseConnector.instance.cnx.cursor()
+        query = "INSERT INTO session\
+                    (user_id, uuid, context)\
+                    VALUES (%s, %s, %s)"
+        cursor.execute(query, (user_id, str(uuid), context))
+        DatabaseConnector.instance.cnx.commit()

@@ -1,6 +1,10 @@
 from wit import Wit
 
-access_token = ''
+access_token = '%token%'
+
+def run_actions(session_id, message):
+	resp = client.run_actions(session_id, message, {})
+	return str(resp)
 
 def first_entity_value(entities, entity):
 	if entity not in entities:
@@ -16,6 +20,7 @@ def send(request, response):
 
 def record_expense(request):
 	context = request['context']
+	print('record expense context', context)
 	entities = request['entities']
 
 	# State keys
@@ -34,7 +39,7 @@ def record_expense(request):
 		item = first_entity_value(entities, item_key)
 	if not amount:
 		amount = first_entity_value(entities, amount_key)
-		
+
 	if item and amount:
 		# Send data to DB
 		context.pop(no_item_key, None)
@@ -58,7 +63,7 @@ def record_expense(request):
 	pprint(request)
 
 	print('record_expense(', item, amount, ')')
-	
+
 	return context
 
 def record_income(request):
@@ -86,7 +91,7 @@ def record_income(request):
 	pprint(request)
 
 	print('record_income(', amount, ')')
-	
+
 	return context
 
 def show_summary(request):
@@ -113,7 +118,7 @@ def set_savings_goal(request):
 		item = first_entity_value(entities, item_key)
 	if not amount:
 		amount = first_entity_value(entities, amount_key)
-		
+
 	if item and amount:
 		# Send data to DB
 		context.pop(no_item_key, None)
@@ -136,7 +141,7 @@ def set_savings_goal(request):
 
 	from pprint import pprint
 	pprint(request)
-	
+
 	print('set_savings_goal(', item, amount, ')')
 
 	return context
@@ -149,6 +154,8 @@ actions = {
 	'showSummary': show_summary,
 	'setSavingsGoal': set_savings_goal
 }
-
 client = Wit(access_token=access_token, actions=actions)
-client.interactive()
+while True:
+	resp = run_actions('1', input("Say something: "))
+
+	print('response', resp)
