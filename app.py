@@ -11,6 +11,7 @@ import os
 import logging
 import requests
 import messengerHelper
+import witBot
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
@@ -108,63 +109,7 @@ def handle_message(messaging_event):
     print('received message', message_text)
 
     messengerHelper.send_typing_action(sender_id)
-
-    if messaging_event['message'].get('quick_reply'):
-        handle_quick_reply(messaging_event)
-    elif message_text == 'button':
-        # EXAMPLE OF SENDING BUTTON MESSAGE
-        messengerHelper.send_button_message(sender_id, 'Button Template', [
-            messengerHelper.get_url_button('Google', 'https://www.google.com'),
-            messengerHelper.get_postback_button('Post it back!', 'PAYLOAD_POSTBACK')
-            ])
-    elif message_text == 'generic':
-        # EXAMPLE OF SENDING GENERIC TEMPLATE
-        fire_image_url = 'https://cdn.cloudpix.co/images/hot-wallpaper/fire-element-hd-wallpaper-hot-fire-wallpaper-4c0b34956dddc37694702630f23ab29a-large-1393949.jpg'
-        water_image_url = 'http://vignette4.wikia.nocookie.net/elemental-roleplay/images/c/c6/Water_Element.jpeg/revision/latest?cb=20130912201151'
-        messengerHelper.send_generic_message(sender_id, [
-                messengerHelper.get_generic_element('Fire Element', 'Subtitle for fire element ~',
-                fire_image_url,
-                [messengerHelper.get_url_button('go to pic', fire_image_url)]),
-                messengerHelper.get_generic_element('Water Element', 'Subtitle for water element ~',
-                water_image_url,
-                [messengerHelper.get_url_button('go to pic', water_image_url),
-                messengerHelper.get_url_button('go to source page', 'http://elemental-roleplay.wikia.com/wiki/Water_Element')])
-            ])
-    elif message_text == 'receipt':
-        # EXAMPLE OF SENDING RECEIPT TEMPLATE
-        messengerHelper.send_receipt_message(sender_id, [
-            messengerHelper.get_receipt_element('Dinner', 'Mala Hotpot', 4.20),
-            messengerHelper.get_receipt_element('Supper', 'Hawaiian Burger', 3.50)
-        ], 7.70)
-    elif message_text == 'quickreply':
-        messengerHelper.send_quick_reply(sender_id, 'What\'s your quick reply?', [
-            messengerHelper.get_quick_reply('A.', 'PAYLOAD_A'),
-            messengerHelper.get_quick_reply('B.', 'PAYLOAD_B'),
-            messengerHelper.get_quick_reply('C.', 'PAYLOAD_C'),
-            messengerHelper.get_quick_reply('NONE OF THE ABOVE.', 'PAYLOAD_NONE'),
-        ])
-    else:
-        # NORMAL MESSAGE
-        task = Parser().wit_parse_message(message_text)
-        print('** TASK **', task)
-        if task['intent'] == 'transaction':
-            TransactionTask(sender_id, task['item'], -task['amount']).execute()
-            quick_replies = [messengerHelper.get_quick_reply(PAYLOAD_CATEGORIES[payload], payload) for payload in PAYLOAD_CATEGORIES.keys()]
-            messengerHelper.send_quick_reply(sender_id, 'What\'s the category?', list(quick_replies))
-        elif task['intent'] == 'savings':
-            TransactionTask(sender_id, task['item'], task['amount']).execute()
-            DatabaseConnector().update_transaction(sender_id, 'Income')
-            messengerHelper.send_message(sender_id, get_income_added_msg(task['item'], task['amount']))
-        elif task['intent'] == 'summary':
-            send_summary_template(sender_id)
-        elif task['intent'] == 'greet':
-            send_quick_reply_menu(sender_id, 'Hi! What would you like to do?')
-        elif task['intent'] == 'goal':
-            DatabaseConnector().add_savings_goal(sender_id, task['item'], task['amount'], datetime.now() + relativedelta(months=1))
-            quick_replies = [messengerHelper.get_quick_reply(PAYLOAD_GOAL_DURATION[p], p) for p in PAYLOAD_GOAL_DURATION]
-            messengerHelper.send_quick_reply(sender_id, 'How long do you wish to reach the goal?', quick_replies)
-        else:
-            send_quick_reply_menu(sender_id, task['reply'])
+    witBot.run_actions(sender_id, message_text)
 
 def send_summary_template(sender_id):
     generated_url = SummaryTask(sender_id).execute()
