@@ -19,11 +19,12 @@
 						margin-right: auto; margin-left: auto; }
 		.chartVis 	  { margin-right: auto; margin-left: auto; margin-bottom: 20px; }
 		#chart3Vis	  { height: 300px; overflow: auto; }
-		.progress     { width: 300px; border-radius: 2px; margin-right: auto; margin-left: auto;
-						background-color: #36A2EB; position: relative; }
-		.bar 		  { width: 0%; height: 10px; border-radius: 2px; background-color: #FFCE56; }
+		.progress     { width: 300px; border-radius: 2px; margin-right: auto; margin-left: auto; position: relative; }
+		.fullbar			{ width: 100%; height: 10px; border-radius: 2px; background-color: #36A2EB}
+		.bar 		  { width: 0%; max-width: 100%; height: 10px; border-radius: 2px; background-color: #FFCE56; position: absolute; top: 0}
+		.amount 		{position: absolute; left: 70%}
 		.goal 		  { position: absolute; width: 5px; height: 10px;
-						background-color: #FF6384; left: 70%; }
+						background-color: #FF6384; left: 70%; z-index: 3;}
 		.goalText 	  { position: absolute; width: 5px; height: 10px;
 						top: -14px; left: 67%; font-size: 12px; }
 		.mascotCont	  { position:absolute; top:0; left:0; width: 100%;
@@ -45,7 +46,9 @@
 	<div class="progress">
 		<div class="goalText">Goal</div>
 		<div class="goal"></div>
-		<div class="bar"></div></div><br>
+		<div class="fullbar"></div>
+		<div class="bar"></div>
+		<div class="amount"></div></div><br>
 	<div class="chart" id="chart1">
 		<canvas class="chartVis" id="chart1Vis" width="300" height="300"></canvas>
 		<div class="mascotCont"><img class="mascot" src="{{ url_for('static', filename='mascot.png') }}"></div></div>
@@ -75,11 +78,11 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 	<script type="text/javascript">
 
-		var server = "https://shilling.ikaruswill.com/summary?";
+		var server = "https://shilling.ikaruswill.com/";
 		var userId = getURLParameter('userId') === null ? 1 : getURLParameter('userId');
-		var start = getURLParameter('start') === null ? 1488326400000 : getURLParameter('start');
-		var end = getURLParameter('end') === null ? 1489104000000 : getURLParameter('end');
-		var url = server + 'userId=' + userId + '&start=' + start + '&end=' + end;
+		var end = (new Date()).getTime();
+		var start = end - 24 * 60 * 60 * 1000;
+		var url = server + 'summary?userId=' + userId + '&start=' + start + '&end=' + end;
 		var data = undefined;
 
 		var option = "lastDay";
@@ -87,7 +90,6 @@
 
 		$.get(url, {}, function(result) {
 			data = result;
-			moveProgressBar();
 			$.getScript("{{ url_for('static', filename='chart1.js') }}");
 			$('.chartButton').click(function() {
 				chart = this.id;
@@ -107,6 +109,13 @@
 		    console.log( "=== Finished fecthing data from " + url + " ===");
 		});
 
+		var goalUrl = server + 'savingsGoal?userId=' + userId;
+
+		$.get(goalUrl, {}, function(result) {
+			moveProgressBar(result['savings'], result['amount']);
+			setGoalAmount(result['amount'])
+		})
+
 		function buttonClick() {
 			$('.chart').hide(); //hide all charts
 			$('#'+chart).show(); //only show selected chart
@@ -115,8 +124,14 @@
 			if (chart === "chart3") $.getScript("{{ url_for('static', filename='chart3.js') }}");
 		}
 
-		function moveProgressBar() {
-			$( ".bar" ).animate({width: "+=90%"}, 2000);
+		function moveProgressBar(savings, amount) {
+			percentage = Math.ceil(savings / amount * 100 * 0.7)
+			$( ".bar" ).animate({width: "+=" + percentage + "%"}, 2000 * savings / amount);
+		}
+
+		function setGoalAmount(amount) {
+			$( ".amount" ).text("$" + amount);
+			$( ".amount" ).css("margin-left", -1/2 * $( ".amount" ).innerWidth())
 		}
 
 		function getURLParameter(name) {

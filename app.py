@@ -12,6 +12,7 @@ import logging
 import requests
 import messengerHelper
 import witBot
+import uuid
 
 logging.basicConfig(filename='app.log',level=logging.DEBUG)
 
@@ -96,6 +97,19 @@ def get_summary():
 
     return jsonify(DatabaseConnector().get_summary(user_id, start_time, end_time))
 
+@app.route('/savingsGoal', methods=['GET'])
+def get_savings_goal():
+    user_id = request.args.get('userId')
+    if not user_id:
+        return 'Missing userId parameter', 403
+    savings_goal = DatabaseConnector().get_savings_goal(user_id = user_id)
+
+    if savings_goal == None:
+        return jsonify({'error': 'No savings goal found'})
+
+    savings_goal['savings'] = DatabaseConnector().get_total_savings(user_id)
+    return jsonify(savings_goal)
+
 @app.route('/chart', methods=['GET'])
 def get_chart_html():
     return render_template('index.html')
@@ -138,7 +152,9 @@ def handle_quick_reply(messaging_event):
     handle_payload(sender_id, messaging_event['message']['quick_reply'].get('payload'))
 
 def handle_payload(sender_id, payload):
-    if payload.startswith('PAYLOAD_CAT'):
+    if payload == 'PAYLOAD_GET_STARTED':
+        witBot.run_actions(sender_id, 'hi')
+    elif payload.startswith('PAYLOAD_CAT'):
         handle_payload_cat(sender_id, payload)
     elif payload.startswith('PAYLOAD_MENU'):
         handle_payload_menu(sender_id, payload)
@@ -153,18 +169,23 @@ def handle_payload_cat(sender_id, payload):
     messengerHelper.send_message(sender_id, get_expense_added_msg(transaction[0], -transaction[1], transaction[2]))
 
 def handle_payload_menu(sender_id, payload):
-    message = ''
     if payload == 'PAYLOAD_MENU_TRANSACTION':
-        message = 'What did you spent on and how much is it?'
+        reset_context(sender_id)
+        witBot.run_actions(sender_id, 'expense')
     elif payload == 'PAYLOAD_MENU_SAVINGS':
-        message = 'Tell me how much is your income. For example: I got $20'
+        reset_context(sender_id)
+        witBot.run_actions(sender_id, 'income')
     elif payload == 'PAYLOAD_MENU_GOALS':
-        message = 'What is your savings goal?'
+        reset_context(sender_id)
+        witBot.run_actions(sender_id, 'savings goal')
     elif payload == 'PAYLOAD_MENU_SUMMARY':
-        send_summary_template(sender_id)
+        reset_context(sender_id)
+        witBot.run_actions(sender_id, 'summary')
         return
 
-    messengerHelper.send_message(sender_id, message)
+def reset_context(sender_id):
+    DatabaseConnector().update_session_id(str(uuid.uuid1()), fb_user_id=sender_id)
+    DatabaseConnector().update_session_context_with_fb_id(sender_id, '{}')
 
 def handle_payload_goal(sender_id, payload):
     goal_start = DatabaseConnector().get_savings_goal(sender_id)['started']

@@ -1,5 +1,9 @@
 curl -X POST -H "Content-Type: application/json" -d '{
-  "get_started":{
-    "payload":"GET_STARTED_PAYLOAD"
-  }
-}' "https://graph.facebook.com/v2.6/me/messenger_profile?access_token=$1"    
+  "setting_type":"call_to_actions",
+  "thread_state":"new_thread",
+  "call_to_actions":[
+    {
+      "payload":"PAYLOAD_GET_STARTED"
+    }
+  ]
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=$1"
