@@ -120,6 +120,7 @@ def record_income(request):
 		context['end'] = True
 	else:
 		context[no_amount_key] = True
+		context[amount_key] = amount
 		context.pop(success_key, None)
 
 	print('record_income(', amount, ')')

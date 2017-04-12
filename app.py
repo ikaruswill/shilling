@@ -58,7 +58,9 @@ def webhook():
                 print(messaging_event)
                 messengerHelper.add_user_if_new(messaging_event)
 
-                if messaging_event.get('message'): # receive a message
+                if messaging_event.get('postback'):  # user clicked/tapped 'postback' button in earlier message
+                    handle_postback(messaging_event)
+                elif messaging_event.get('message'): # receive a message
                     handle_message(messaging_event)
 
                 if messaging_event.get('delivery'):  # delivery confirmation
@@ -67,8 +69,7 @@ def webhook():
                 if messaging_event.get('optin'):  # optin confirmation
                     pass
 
-                if messaging_event.get('postback'):  # user clicked/tapped 'postback' button in earlier message
-                    handle_postback(messaging_event)
+
 
     return 'ok', 200
 
@@ -181,7 +182,6 @@ def handle_payload_menu(sender_id, payload):
     elif payload == 'PAYLOAD_MENU_SUMMARY':
         reset_context(sender_id)
         witBot.run_actions(sender_id, 'summary')
-        return
 
 def reset_context(sender_id):
     DatabaseConnector().update_session_id(str(uuid.uuid1()), fb_user_id=sender_id)
