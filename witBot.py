@@ -117,10 +117,10 @@ def record_income(request):
 		# Send data to DB
 		context.pop(no_amount_key, None)
 		context[success_key] = True
+		context[amount_key] = amount
 		context['end'] = True
 	else:
 		context[no_amount_key] = True
-		context[amount_key] = amount
 		context.pop(success_key, None)
 
 	print('record_income(', amount, ')')
