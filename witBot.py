@@ -125,7 +125,7 @@ def record_income(request):
 
 	print('record_income(', amount, ')')
 	if context.get('end') == True:
-		TransactionTask(current_fb_user_id, 'Income', amount).execute()
+		TransactionTask(current_fb_user_id, 'Income', amount, 'Income').execute()
 		messengerHelper.send_message(current_fb_user_id, get_income_added_msg(item, amount))
 
 	return context
